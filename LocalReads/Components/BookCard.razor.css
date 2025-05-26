@@ -1,0 +1,42 @@
+.book-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 1px 1px 4px rgba(0,0,0,0.05);
+    font-family: sans-serif;
+    transition: transform 0.2s ease;
+}
+
+.book-card:hover {
+    transform: scale(1.03);
+}
+
+.book-img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+}
+
+.book-info {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.book-info h3 {
+    font-size: 0.95rem;
+    margin: 0 0 0.3rem;
+    color: #333;
+}
+
+.book-info .author {
+    font-style: italic;
+    color: #666;
+    margin-bottom: 0.2rem;
+}
+
+.book-info .meta {
+    color: #888;
+    font-size: 0.75rem;
+}

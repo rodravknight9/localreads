@@ -1,0 +1,30 @@
+﻿@page "/"
+@using LocalReads.DTO
+@using LocalReads.Services
+@using LocalReads.Components
+@using LocalReads.State
+@inject IOpenLibraryService OpenLibraryService
+@inject AppState AppState
+
+<div class="book-grid">
+    @foreach(BookDto book in AppState.SearchResults.Books)
+    {
+        <BookCard Book="@book" />
+    }
+</div>
+
+@code
+{
+    protected override async Task OnInitializedAsync()
+    {
+        AppState.SearchResults.OnChange += StateHasChanged;
+        var books = (await OpenLibraryService.GetRandomBooks())
+            .Select(BookDto.FromBook);
+        AppState.SearchResults.SetSearchResults(books.ToList());
+    }
+    
+    public void Dispose()
+    {
+        AppState.SearchResults.OnChange -= StateHasChanged;
+    }
+}

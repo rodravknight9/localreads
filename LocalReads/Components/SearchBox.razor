@@ -1,0 +1,33 @@
+@using LocalReads.DTO
+@using LocalReads.Services
+@using LocalReads.State
+@inject IOpenLibraryService GoogleBooksService
+@inject AppState AppState
+
+<div class="search-box">
+    <input type="text"
+           class="search-input"
+           placeholder="Search books..."
+           @bind="SearchTerm"
+           @bind:event="oninput" />
+    <button class="search-button" @onclick="OnSearchClicked">🔍</button>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<string> OnSearch { get; set; }
+
+    private string SearchTerm { get; set; } = "";
+
+    private async Task OnSearchClicked()
+    {
+        var books = 
+            (await GoogleBooksService.GetBySearch(SearchTerm))
+            .Select(BookDto.FromBook);
+        AppState.SearchResults.SetSearchResults(books.ToList());
+        if (OnSearch.HasDelegate)
+        {
+            await OnSearch.InvokeAsync(SearchTerm);
+        }
+    }
+}

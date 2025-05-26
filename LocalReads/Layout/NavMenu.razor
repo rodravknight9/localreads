@@ -1,0 +1,30 @@
+﻿@using LocalReads.Components
+@using LocalReads.Services
+@inject IOpenLibraryService GoogleBooksService
+
+<nav class="navbar">
+    <div class="navbar-container">
+        <div class="navbar-searchbox">
+            <SearchBox OnSearch="HandleSearch"/>
+        </div>
+        <div class="navbar-items">
+            <NavLink href="/wishlist" class="nav-item" activeClass="active">
+                Wishlist
+            </NavLink>
+            <NavLink href="/inprogress" class="nav-item" activeClass="active">
+                In Progress
+            </NavLink>
+            <NavLink href="/alreadyread" class="nav-item" activeClass="active">
+                Already Read
+            </NavLink>
+        </div>
+    </div>
+</nav>
+
+@code {
+    private async Task HandleSearch(string term)
+    {
+        var test = await GoogleBooksService.GetBySearch(term);
+        Console.WriteLine($"Search for: {term}");
+    }
+}
