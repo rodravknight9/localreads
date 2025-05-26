@@ -6,13 +6,95 @@ body {
     color: #333;
 }
 
-.nav-item {
-    padding: 0.8rem 1.5rem;
-    margin-left: 0.5rem;
-    border-radius: 999px;
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    font-weight: 600;
+.custom-link {
+    color: white;
     text-decoration: none;
-    transition: all 0.3s ease;
+    padding: 15px 20px;
+    margin-left: 10px;
+}
+
+.content {
+    width: 80vw;
+    justify-self: center;
+    margin-top: 10vh;
+}
+
+.navbar {
+    background: linear-gradient(to right, #667eea, #764ba2);
+    padding: 1rem 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 2rem;
+}
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    cursor: pointer;
+}
+
+.nav-item.active {
+    background-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+    background: #f4f4f4;
+}
+
+.book-card:hover {
+    transform: scale(1.03);
+    cursor: pointer;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    background-color: #f9f9f9;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    max-width: 400px;
+    margin: 1rem auto;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 0.5rem 0 0 0.5rem;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.search-input:focus {
+    border-color: #007bff;
+}
+
+.search-button {
+    padding: 0.6rem 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 0 0.5rem 0.5rem 0;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.search-button:hover {
+    background-color: #0056b3;
 }

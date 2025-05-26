@@ -16,10 +16,16 @@ public class BookDto
 
     public static BookDto FromBook(Book book)
     {
+        var authors = book.VolumeInfo.Authors?
+            .Aggregate((a, b) => $"{a}, {b}") ?? "";
         return new BookDto()
         {
-            Title = book.VolumeInfo.Title,
-            Authors = book.VolumeInfo.Authors?.Aggregate((a, b) => $"{a}, {b}") ?? "",
+            Title = book.VolumeInfo.Title.Length >= 20 
+                ? book.VolumeInfo.Title.Substring(0, 20) + "..."
+                : book.VolumeInfo.Title,
+            Authors = authors.Length >= 20 
+                ? authors.Substring(0, 20) 
+                : authors + "...",
             Publisher = book.VolumeInfo?.Publisher ?? "",
             PublishedDate = book.VolumeInfo?.PublishedDate ?? "",
             Description = book.VolumeInfo?.Description ?? "",

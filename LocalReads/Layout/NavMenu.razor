@@ -1,25 +1,26 @@
 ﻿@using LocalReads.Components
 @using LocalReads.Services
+@using MudBlazor
 @inject IOpenLibraryService GoogleBooksService
 
-<nav class="navbar">
-    <div class="navbar-container">
-        <div class="navbar-searchbox">
-            <SearchBox OnSearch="HandleSearch"/>
-        </div>
-        <div class="navbar-items">
-            <NavLink href="/wishlist" class="nav-item" activeClass="active">
-                Wishlist
-            </NavLink>
-            <NavLink href="/inprogress" class="nav-item" activeClass="active">
-                In Progress
-            </NavLink>
-            <NavLink href="/alreadyread" class="nav-item" activeClass="active">
-                Already Read
-            </NavLink>
-        </div>
+<MudAppBar Style="padding: 10px">
+    <div class="navbar-searchbox">
+        <SearchBox OnSearch="HandleSearch"/>
     </div>
-</nav>
+    <a href="/wishlist" Class="custom-link">
+        <MudIcon Icon="@Icons.Material.Filled.Bookmark" Title="Bookmark" />
+        Wishlist
+    </a>
+
+    <a href="/inprogress" Class="custom-link">
+        <MudIcon Icon="@Icons.Material.Filled.Favorite" Title="Favorite" />
+        In Progress
+    </a>
+    <a href="/alreadyread" Class="custom-link">
+        <MudIcon Icon="@Icons.Material.Filled.CheckBox" Title="Read" />
+        Already read
+    </a>
+</MudAppBar>
 
 @code {
     private async Task HandleSearch(string term)

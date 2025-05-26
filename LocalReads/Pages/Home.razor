@@ -3,15 +3,16 @@
 @using LocalReads.Services
 @using LocalReads.Components
 @using LocalReads.State
+@using MudBlazor
 @inject IOpenLibraryService OpenLibraryService
 @inject AppState AppState
 
-<div class="book-grid">
+<MudContainer class="book-grid">
     @foreach(BookDto book in AppState.SearchResults.Books)
     {
         <BookCard Book="@book" />
     }
-</div>
+</MudContainer>
 
 @code
 {

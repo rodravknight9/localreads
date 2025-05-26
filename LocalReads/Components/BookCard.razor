@@ -1,15 +1,37 @@
 @using LocalReads.DTO
-
-<div class="book-card">
-    <img src="@Book.ImageLink" alt="Book Cover" class="book-img" />
-    <div class="book-info">
-        <h3>@Book.Title</h3>
-        <p class="author">@Book.Authors</p>
-        <p class="meta">@Book.Publisher, @Book.PublishedDate</p>
-    </div>
+@using MudBlazor
+<div>
+    <MudCard Class="book-card " Style="max-width: 350px; height: 450px">
+        <MudCardMedia Image="@Book.ImageLink" Style="min-height: 300px"/>
+        <MudCardContent>
+            <MudText Typo="Typo.subtitle2" Truncate="true">@Book.Title</MudText>
+            <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Truncate="true">@Book.Authors</MudText>
+        </MudCardContent>
+        <MudCardActions Class="d-flex justify-end">
+            <MudMenu 
+                StartIcon="@Icons.Material.Filled.More" 
+                Color="Color.Dark" 
+                Variant="Variant.Text"
+                Label="More"
+                >
+                <MudMenuItem @onclick="AddToFavorites">Add to Favorites</MudMenuItem>
+                <MudMenuItem @onclick="MarkInProgress">Mark as In Progress</MudMenuItem>
+            </MudMenu>
+        </MudCardActions>
+    </MudCard>
 </div>
+
 
 @code {
     [Parameter]
     public BookDto Book { get; set; } 
+    void AddToFavorites()
+    {
+        //Snackbar.Add($"{Book.Title} added to favorites", Severity.Success);
+    }
+
+    void MarkInProgress()
+    {
+        //Snackbar.Add($"{Book.Title} marked as in progress", Severity.Info);
+    }
 }
