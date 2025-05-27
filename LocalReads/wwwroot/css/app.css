@@ -4,6 +4,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f9f9f9;
     color: #333;
+    background: #f4f4f4;
 }
 
 .custom-link {
@@ -47,10 +48,10 @@ body {
 
 .book-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 1rem;
     padding: 1rem;
-    background: #f4f4f4;
+
 }
 
 .book-card:hover {

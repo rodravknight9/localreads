@@ -1,26 +1,24 @@
 @using LocalReads.DTO
 @using MudBlazor
-<div>
-    <MudCard Class="book-card " Style="max-width: 350px; height: 450px">
-        <MudCardMedia Image="@Book.ImageLink" Style="min-height: 300px"/>
-        <MudCardContent>
-            <MudText Typo="Typo.subtitle2" Truncate="true">@Book.Title</MudText>
-            <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Truncate="true">@Book.Authors</MudText>
-        </MudCardContent>
-        <MudCardActions Class="d-flex justify-end">
-            <MudMenu 
-                StartIcon="@Icons.Material.Filled.More" 
-                Color="Color.Dark" 
-                Variant="Variant.Text"
-                Label="More"
-                >
-                <MudMenuItem @onclick="AddToFavorites">Add to Favorites</MudMenuItem>
-                <MudMenuItem @onclick="MarkInProgress">Mark as In Progress</MudMenuItem>
-            </MudMenu>
-        </MudCardActions>
-    </MudCard>
-</div>
 
+<MudCard Class="book-card " Style="max-width: 250px; height: 450px">
+    <MudCardMedia Image="@Book.ImageLink" Style="min-height: 300px"/>
+    <MudCardContent>
+        <MudText Typo="Typo.subtitle2" Truncate="true">@Book.Title</MudText>
+        <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Truncate="true">@Book.Authors</MudText>
+    </MudCardContent>
+    <MudCardActions Class="d-flex justify-end">
+        <MudMenu 
+            StartIcon="@Icons.Material.Filled.More" 
+            Color="Color.Dark" 
+            Variant="Variant.Text"
+            Label="More"
+            >
+            <MudMenuItem @onclick="AddToFavorites">Add to Favorites</MudMenuItem>
+            <MudMenuItem @onclick="MarkInProgress">Mark as In Progress</MudMenuItem>
+        </MudMenu>
+    </MudCardActions>
+</MudCard>
 
 @code {
     [Parameter]

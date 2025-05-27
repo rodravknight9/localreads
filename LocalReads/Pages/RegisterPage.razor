@@ -1,0 +1,27 @@
+﻿@page "/register"
+@using LocalReads.Services
+@using LocalReads.Shared.DataTransfer.User
+@using MudBlazor
+@inject IHttpRequest HttpRequest
+
+<MudContainer>
+    <MudItem xs="12" sm="7">
+        <MudPaper Class="pa-4">
+            <MudForm Model="@RegisterUser">
+                <MudTextField T="string" Label="Username" @bind-Value="@RegisterUser.UserName" />
+                <MudTextField T="string" Label="Name" @bind-Value="@RegisterUser.Name"/>
+                <MudTextField T=" string" Label="Password" @bind-Value="@RegisterUser.Password" InputType="InputType.Password" />
+                <!--<MudTextField T="string" Label="Password" HelperText="Repeat the password" InputType="InputType.Password" />-->
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="HandleRegister">Register</MudButton>
+            </MudForm>
+        </MudPaper>
+    </MudItem>
+</MudContainer>
+
+@code {
+    public RegisterUser RegisterUser { get; set; } = new RegisterUser();
+    private async Task HandleRegister()
+    {
+        await HttpRequest.Post<RegisterUser>(RegisterUser, "/users/register");
+    }
+}

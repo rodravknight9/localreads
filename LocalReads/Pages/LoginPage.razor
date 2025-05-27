@@ -1,0 +1,28 @@
+﻿@page "/login"
+@using LocalReads.Services
+@using LocalReads.State
+@using MudBlazor
+@using LocalReads.Shared.DataTransfer.User
+@inject IServerService ServerService
+@inject AppState AppState
+
+<MudContainer Style="align-self: center">
+    <MudItem xs="12" sm="7">
+        <MudPaper Class="pa-4">
+            <MudForm Model="@Login">
+                <MudTextField T="string" Label="Username" @bind-Value="@Login.UserName" />
+                <MudTextField T="string" Label="Password" @bind-Value="@Login.Password"  InputType="InputType.Password" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="HandleLogin">Login</MudButton>
+            </MudForm>
+        </MudPaper>
+    </MudItem>
+</MudContainer>
+
+@code {
+    private Login Login { get; set; } = new Login();
+    public async Task HandleLogin()
+    {
+        var test = await ServerService.Login(Login);
+        AppState.UserState.OnUserLog(test);
+    }
+}

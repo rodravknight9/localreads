@@ -1,5 +1,0 @@
-﻿namespace LocalReads.Shared;
-
-public class Class1
-{
-}

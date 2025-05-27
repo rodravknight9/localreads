@@ -12,4 +12,8 @@
     <PackageReference Include="MudBlazor" Version="8.6.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\LocalReads.Shared\LocalReads.Shared.csproj" />
+  </ItemGroup>
+
 </Project>
