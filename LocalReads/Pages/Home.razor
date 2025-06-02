@@ -8,13 +8,14 @@
 @inject AppState AppState
 
 <MudText>Resultados de: @AppState.SearchResults.TermSearch</MudText>
-<MudDivider />
-<MudContainer class="book-grid">
+<MudDivider Style="margin-bottom: 2rem"/>
+
+<MudGrid>
     @foreach(BookDto book in AppState.SearchResults.Books)
     {
         <BookCard Book="@book" />
     }
-</MudContainer>
+</MudGrid>
 
 @code
 {
@@ -22,9 +23,13 @@
     {
         AppState.SearchResults.OnChange += StateHasChanged;
 
-        var books = (await OpenLibraryService.GetRandomBooks())
-            .Select(BookDto.FromBook);
-        AppState.SearchResults.SetSearchResults(books.ToList());
+        if (string.IsNullOrEmpty(AppState.SearchResults.TermSearch))
+        {
+            var books = (await OpenLibraryService.GetRandomBooks())
+                .Select(BookDto.FromBook);
+            AppState.SearchResults.SetSearchResults(books.ToList());
+        }
+
     }
     
     public void Dispose()

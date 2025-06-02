@@ -12,5 +12,11 @@ public class UserState
         NotifyStateChanged();
     }
 
+    public void OnUserLogOut()
+    {
+        User = null;
+        NotifyStateChanged();
+    }
+
     private void NotifyStateChanged() => OnChange?.Invoke();
 }

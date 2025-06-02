@@ -3,6 +3,7 @@
 @using LocalReads.State
 @inject IOpenLibraryService GoogleBooksService
 @inject AppState AppState
+@inject NavigationManager Navigation
 
 <div class="search-box">
     <input type="text"
@@ -26,6 +27,7 @@
             .Select(BookDto.FromBook);
         AppState.SearchResults.SetSearchResults(books.ToList());
         AppState.SearchResults.TermSearch = SearchTerm;
+        Navigation.NavigateTo("/");
         if (OnSearch.HasDelegate)
         {
             await OnSearch.InvokeAsync(SearchTerm);

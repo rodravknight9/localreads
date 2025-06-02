@@ -1,0 +1,23 @@
+@using MudBlazor
+<MudDialog>
+    <TitleContent>
+        Save to the Wishlist
+    </TitleContent>
+    <DialogContent>
+        Are you sure you want to save "@BookTitle" to Wishlist? 
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] 
+    public string BookTitle { get; set; }
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+    
+    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    private void Cancel() => MudDialog.Cancel();
+}

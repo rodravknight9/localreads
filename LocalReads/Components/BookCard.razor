@@ -1,31 +1,45 @@
 @using LocalReads.DTO
 @using MudBlazor
+@inject IDialogService DialogService
 
-<MudCard Class="book-card " Style="max-width: 250px; height: 450px">
-    <MudCardMedia Image="@Book.ImageLink" Style="min-height: 300px"/>
-    <MudCardContent>
+<MudCard Class="d-flex flex-row" Style="min-width: 300px; height: 150px; margin: 12px">
+    <MudCardMedia Class="media-horizontal" Image="@Book.ImageLink" Style="width: 100px; height: 100%"/>
+    <MudCardContent Style="max-width: 200px">
         <MudText Typo="Typo.subtitle2" Truncate="true">@Book.Title</MudText>
         <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Truncate="true">@Book.Authors</MudText>
+        <MudCardActions Class="d-flex justify-end">
+            <MudMenu 
+                StartIcon="@Icons.Material.Filled.More" 
+                Color="Color.Dark" 
+                Variant="Variant.Text"
+                Label="More"
+                >
+                <MudMenuItem @onclick="AddToFavorites">Add to the Wishlist</MudMenuItem>
+                <MudMenuItem @onclick="MarkInProgress">Mark as In Progress</MudMenuItem>
+                <MudMenuItem @onclick="MarkInProgress">Add as Read</MudMenuItem>
+            </MudMenu>
+        </MudCardActions>
     </MudCardContent>
-    <MudCardActions Class="d-flex justify-end">
-        <MudMenu 
-            StartIcon="@Icons.Material.Filled.More" 
-            Color="Color.Dark" 
-            Variant="Variant.Text"
-            Label="More"
-            >
-            <MudMenuItem @onclick="AddToFavorites">Add to Favorites</MudMenuItem>
-            <MudMenuItem @onclick="MarkInProgress">Mark as In Progress</MudMenuItem>
-        </MudMenu>
-    </MudCardActions>
 </MudCard>
 
 @code {
     [Parameter]
     public BookDto Book { get; set; } 
-    void AddToFavorites()
+    private async Task AddToFavorites()
     {
-        //Snackbar.Add($"{Book.Title} added to favorites", Severity.Success);
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var paramsDialog = new DialogParameters
+        {
+            { "BookTitle", Book.Title }
+        };
+        var dialog = await DialogService
+            .ShowAsync<AddToWishlistDialog>("Simple Dialog", paramsDialog, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            // Handle confirmation
+        }
     }
 
     void MarkInProgress()

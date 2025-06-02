@@ -1,3 +1,4 @@
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using LocalReads;
@@ -10,8 +11,9 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<IOpenLibraryService, OpenLibraryService>();
-builder.Services.AddScoped<IServerService, ServerService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHttpRequest, HttpRequest>();
 builder.Services.AddSingleton<AppState>();
 builder.Services.AddMudServices();
