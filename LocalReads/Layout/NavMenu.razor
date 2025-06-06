@@ -2,6 +2,7 @@
 @using LocalReads.Services
 @using LocalReads.State
 @using MudBlazor
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IOpenLibraryService GoogleBooksService
 @inject AppState AppState
 @inject NavigationManager Navigation
@@ -11,30 +12,30 @@
     <MudText Typo="Typo.h4">LocalReads</MudText>
     <SearchBox OnSearch="HandleSearch"/>
     <MudSpacer/>
-    @if (AppState.UserState.User != null)
-    {
-        <a href="/wishlist" Class="custom-link d-flex justify-center align-center">
-            <MudIcon Icon="@Icons.Material.Outlined.Bookmark" Title="Bookmark"/>
-        </a>
-        <a href="/inprogress" Class="custom-link d-flex justify-center align-center" style="">
-            <MudIcon Icon="@Icons.Material.Outlined.Favorite" Title="Favorite"/>
-        </a>
-        <a href="/alreadyread" Class="custom-link d-flex justify-center align-center">
-            <MudIcon Icon="@Icons.Material.Outlined.CheckBox" Title="Read"/>
-        </a>
-        <a href="/" @onclick="LogOut" Class="custom-link d-flex justify-center align-center">
-            <MudIcon Icon="@Icons.Material.Outlined.Logout" Title="LogOut"/>
-        </a>
-        <MudAvatar Color="Color.Secondary" Class="cursor-default">@GetUsernameFirstLetter()</MudAvatar>
-    }
-    else
-    {
-        <MudIcon
-            Icon="@Icons.Material.Outlined.Login"
-            Title="Log In"
-            Size="Size.Large"
-            @onclick="HandleClick"/>
-    }
+    <AuthorizeView>
+        <Authorized>
+            <a href="/wishlist" Class="custom-link d-flex justify-center align-center">
+                <MudIcon Icon="@Icons.Material.Outlined.Bookmark" Title="Bookmark"/>
+            </a>
+            <a href="/inprogress" Class="custom-link d-flex justify-center align-center" style="">
+                <MudIcon Icon="@Icons.Material.Outlined.Favorite" Title="Favorite"/>
+            </a>
+            <a href="/alreadyread" Class="custom-link d-flex justify-center align-center">
+                <MudIcon Icon="@Icons.Material.Outlined.CheckBox" Title="Read"/>
+            </a>
+            <a href="/" @onclick="LogOut" Class="custom-link d-flex justify-center align-center">
+                <MudIcon Icon="@Icons.Material.Outlined.Logout" Title="LogOut"/>
+            </a>
+            <MudAvatar Color="Color.Secondary" Class="cursor-default">@GetUsernameFirstLetter()</MudAvatar>
+        </Authorized>
+        <NotAuthorized>
+            <MudIcon
+                Icon="@Icons.Material.Outlined.Login"
+                Title="Log In"
+                Size="Size.Large"
+                @onclick="HandleClick"/>
+        </NotAuthorized>
+    </AuthorizeView>
 </MudAppBar>
 
 @code {

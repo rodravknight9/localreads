@@ -4,15 +4,12 @@ using LocalReads.Models;
 
 namespace LocalReads.Services;
 
-public class HttpRequest : IHttpRequest
+public class HttpRequest : HttpClient, IHttpRequest
 {
     private readonly HttpClient _httpClient;
-    public HttpRequest()
+    public HttpRequest(HttpClient  httpClient)
     {
-        _httpClient = new HttpClient()
-        {
-            BaseAddress = new Uri("http://localhost:5033")
-        };
+        _httpClient = httpClient;
     }
 
     public async Task<HttpResponse<T>> Post<T, Y>(Y entity, string path)
