@@ -9,20 +9,24 @@
 @inject IAuthService AuthService
 
 <MudAppBar Style="padding: 10px 70px">
-    <MudText Typo="Typo.h4">LocalReads</MudText>
+    <MudText Typo="Typo.h5">LocalReads</MudText>
+    <AuthorizeView>
+        <Authorized>
+            <a href="/mybooks" Class="custom-link d-flex justify-center align-center">
+                Home
+            </a>
+            <a href="/wishlist" Class="custom-link d-flex justify-center align-center">
+                My Books
+            </a>
+            <a href="/wishlist" Class="custom-link d-flex justify-center align-center">
+                My Server
+            </a>
+        </Authorized>
+    </AuthorizeView>
     <SearchBox OnSearch="HandleSearch"/>
     <MudSpacer/>
     <AuthorizeView>
         <Authorized>
-            <a href="/wishlist" Class="custom-link d-flex justify-center align-center">
-                <MudIcon Icon="@Icons.Material.Outlined.Bookmark" Title="Bookmark"/>
-            </a>
-            <a href="/inprogress" Class="custom-link d-flex justify-center align-center" style="">
-                <MudIcon Icon="@Icons.Material.Outlined.Favorite" Title="Favorite"/>
-            </a>
-            <a href="/alreadyread" Class="custom-link d-flex justify-center align-center">
-                <MudIcon Icon="@Icons.Material.Outlined.CheckBox" Title="Read"/>
-            </a>
             <a href="/" @onclick="LogOut" Class="custom-link d-flex justify-center align-center">
                 <MudIcon Icon="@Icons.Material.Outlined.Logout" Title="LogOut"/>
             </a>

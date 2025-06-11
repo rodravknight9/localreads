@@ -2,15 +2,16 @@
 @using LocalReads.Services
 @using MudBlazor
 @using LocalReads.Shared.DataTransfer.User
-@using Microsoft.AspNetCore.Components.Authorization
 @inject IAuthService AuthService
+@inject NavigationManager Navigation
 
 <MudContainer Style="align-self: center">
     <MudItem xs="12" sm="7">
         <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h4">Login</MudText>
             <MudForm Model="@Login">
-                <MudTextField T="string" Label="Username" @bind-Value="@Login.UserName" />
-                <MudTextField T="string" Label="Password" @bind-Value="@Login.Password"  InputType="InputType.Password" />
+                <MudTextField T="string" Label="Username" @bind-Value="@Login.UserName"/>
+                <MudTextField T="string" Label="Password" @bind-Value="@Login.Password" InputType="InputType.Password"/>
             </MudForm>
             <MudButton
                 Variant="Variant.Filled"
@@ -19,19 +20,27 @@
                 @onclick="HandleLogin">
                 Login
             </MudButton>
-            <a Href="/register">Register</a>
+            <MudElement>
+                <p>If you don't have an account go to
+                    <a style="color: blue" Href="/register">Register</a></p>
+            </MudElement>
         </MudPaper>
     </MudItem>
 </MudContainer>
 
 @code {
     private Login Login { get; } = new Login();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(await AuthService.IsLoggedIn())
+            Navigation.NavigateTo("/");
+    }
+
     public async Task HandleLogin()
     {
         var isSigned = await AuthService.Login(Login);
-        if (!isSigned)
-        {
-            
-        }
+        if(isSigned)
+            Navigation.NavigateTo("/");
     }
 }

@@ -6,5 +6,6 @@ namespace LocalReads.Services
     {
         public Task<bool> Login(Login login);
         public Task Logout();
+        public Task<bool> IsLoggedIn();
     }
 }

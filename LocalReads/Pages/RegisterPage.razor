@@ -3,23 +3,35 @@
 @using LocalReads.Shared.DataTransfer.User
 @using MudBlazor
 @inject IHttpRequest HttpRequest
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
 
 <MudContainer>
     <MudItem xs="12" sm="7">
         <MudPaper Class="pa-4">
-            <MudForm Model="@RegisterUser">
-                <MudTextField T="string" Label="Username" @bind-Value="@RegisterUser.UserName" />
+            <MudText Typo="Typo.h4">Register</MudText>  
+            <MudForm Model="@RegisterUser" Style="margin-bottom: 1rem">
+                <MudTextField T="string" Label="Username" @bind-Value="@RegisterUser.UserName"/>
                 <MudTextField T="string" Label="Name" @bind-Value="@RegisterUser.Name"/>
-                <MudTextField T=" string" Label="Password" @bind-Value="@RegisterUser.Password" InputType="InputType.Password" />
+                <MudTextField T="string" Label="Password" @bind-Value="@RegisterUser.Password" InputType="InputType.Password"/>
                 <!--<MudTextField T="string" Label="Password" HelperText="Repeat the password" InputType="InputType.Password" />-->
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="HandleRegister">Register</MudButton>
             </MudForm>
+            <MudElement>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="HandleRegister">Register</MudButton>
+            </MudElement>
         </MudPaper>
     </MudItem>
 </MudContainer>
 
 @code {
     public RegisterUser RegisterUser { get; set; } = new RegisterUser();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        if(await AuthService.IsLoggedIn())
+            Navigation.NavigateTo("/");
+    }
+    
     private async Task HandleRegister()
     {
         await HttpRequest.Post<RegisterUser>(RegisterUser, "/users/register");

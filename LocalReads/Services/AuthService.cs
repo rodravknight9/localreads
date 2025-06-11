@@ -37,4 +37,10 @@ public class AuthService : IAuthService
         await _localStorage.RemoveItemAsync("userState");
         await _authenticationStateProvider.GetAuthenticationStateAsync();
     }
+
+    public async Task<bool> IsLoggedIn()
+    {
+        var userState = await _localStorage.GetItemAsStringAsync("userState");
+        return !string.IsNullOrEmpty(userState);
+    }
 }
