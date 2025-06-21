@@ -1,6 +1,8 @@
-﻿using System.Text.Json;
+﻿using LocalReads.Models;
+using LocalReads.Shared.DataTransfer;
+using System.Net.Http.Json;
 using System.Text;
-using LocalReads.Models;
+using System.Text.Json;
 
 namespace LocalReads.Services;
 
@@ -38,5 +40,28 @@ public class HttpRequest : HttpClient, IHttpRequest
     {
         using StringContent jsonContent = new(JsonSerializer.Serialize(entity), Encoding.UTF8, "application/json");
         var result = await _httpClient.PostAsync(path, jsonContent);
+    }
+
+
+    public async Task<SimpleHttpResponse> SimplePost<T>(T entity, string path)
+    {
+        var httpResult = new SimpleHttpResponse();
+        using StringContent jsonContent = new(JsonSerializer.Serialize(entity), Encoding.UTF8, "application/json");
+
+        try
+        {
+            var result = await _httpClient.PostAsync(path, jsonContent);
+            var stringResult = await result.Content.ReadAsStringAsync();
+            httpResult.StatusCode = result.StatusCode;
+            httpResult.Success = (int)result.StatusCode >= 200 && (int)result.StatusCode < 300;
+            return httpResult;
+        }
+        catch (Exception e)
+        {
+            httpResult.Success = false;
+            httpResult.ErrorMessage = e.Message;
+            return httpResult;
+            throw;
+        }
     }
 }
