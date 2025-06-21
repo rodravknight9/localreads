@@ -12,8 +12,7 @@ public static class FavoriteEndpoints
         app.MapPost("/favorite", async (CreateFavorite favorite, LocalReadsContext db) =>
         {
             var bookExists = db.Books
-                .Where(b => b.BookGoogleId == favorite.Book.BookGoogleId)
-                .FirstOrDefault();
+                .First(b => b.BookGoogleId == favorite.Book.BookGoogleId);
 
             if(bookExists != null)
                 await db.Books.AddAsync(bookExists);

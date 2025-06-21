@@ -16,7 +16,7 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<IOpenLibraryService, OpenLibraryService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHttpRequest, HttpRequest>();
-builder.Services.AddSingleton<AppState>();
+builder.Services.AddScoped<AppState>();
 builder.Services.AddMudServices();
 builder.Services.AddOptions();
 builder.Services.AddAuthorizationCore();

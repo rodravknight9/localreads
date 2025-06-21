@@ -6,6 +6,7 @@
 @using MudBlazor
 @inject IOpenLibraryService OpenLibraryService
 @inject AppState AppState
+@inject IAuthService AuthService
 
 <MudText>Resultados de: @AppState.SearchResults.TermSearch</MudText>
 <MudDivider Style="margin-bottom: 2rem"/>
@@ -28,6 +29,11 @@
             var books = (await OpenLibraryService.GetRandomBooks())
                 .Select(BookDto.FromBook);
             AppState.SearchResults.SetSearchResults(books.ToList());
+        }
+
+        if (AppState.UserState.User == null)
+        {
+            await AuthService.PersistLoggedInUser();
         }
 
     }

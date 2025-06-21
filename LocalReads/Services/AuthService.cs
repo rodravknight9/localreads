@@ -1,5 +1,7 @@
-﻿using Blazored.LocalStorage;
+﻿using System.Text.Json;
+using Blazored.LocalStorage;
 using LocalReads.Shared.DataTransfer.User;
+using LocalReads.Shared.Domain;
 using LocalReads.State;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -42,5 +44,14 @@ public class AuthService : IAuthService
     {
         var userState = await _localStorage.GetItemAsStringAsync("userState");
         return !string.IsNullOrEmpty(userState);
+    }
+
+    public async Task PersistLoggedInUser()
+    {
+        var userState = await _localStorage.GetItemAsStringAsync("userState");
+        if (string.IsNullOrEmpty(userState))
+            return;
+        var user = JsonSerializer.Deserialize<AuthResponse>(userState);
+        _appState.UserState.OnUserLog(user!);
     }
 }

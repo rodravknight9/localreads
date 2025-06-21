@@ -11,8 +11,6 @@ public class SearchResults
         {
             return _termSearch;
         } 
-        
-        
         set 
         {
             _termSearch = value;

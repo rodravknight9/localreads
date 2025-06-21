@@ -4,21 +4,21 @@
 @using MudBlazor
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IOpenLibraryService GoogleBooksService
-@inject AppState AppState
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
+@inject AppState AppState
 
 <MudAppBar Style="padding: 10px 70px">
     <MudText Typo="Typo.h5">LocalReads</MudText>
     <AuthorizeView>
         <Authorized>
-            <a href="/mybooks" Class="custom-link d-flex justify-center align-center">
+            <a href="/home" Class="custom-link d-flex justify-center align-center">
                 Home
             </a>
-            <a href="/wishlist" Class="custom-link d-flex justify-center align-center">
+            <a href="/mybooks" Class="custom-link d-flex justify-center align-center">
                 My Books
             </a>
-            <a href="/wishlist" Class="custom-link d-flex justify-center align-center">
+            <a href="/myserver" Class="custom-link d-flex justify-center align-center">
                 My Server
             </a>
         </Authorized>
@@ -30,7 +30,7 @@
             <a href="/" @onclick="LogOut" Class="custom-link d-flex justify-center align-center">
                 <MudIcon Icon="@Icons.Material.Outlined.Logout" Title="LogOut"/>
             </a>
-            <MudAvatar Color="Color.Secondary" Class="cursor-default">@GetUsernameFirstLetter()</MudAvatar>
+            <MudAvatar @onclick="ToProfile" Color="Color.Secondary" Class="cursor-default">@GetUsernameFirstLetter()</MudAvatar>
         </Authorized>
         <NotAuthorized>
             <MudIcon
@@ -43,6 +43,9 @@
 </MudAppBar>
 
 @code {
+    //[CascadingParameter]
+    //public AppState AppState { get; set; }
+    
     private async Task HandleSearch(string term)
     {
         var test = await GoogleBooksService.GetBySearch(term);
@@ -54,9 +57,8 @@
         Navigation.NavigateTo("/login");
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        await Task.Delay(1);
         AppState.UserState.OnChange += StateHasChanged;
     }
 
@@ -67,7 +69,14 @@
 
     private string GetUsernameFirstLetter()
     {
+        if (AppState.UserState.User == null)
+            return "N";
         return AppState.UserState.User.UserName.Substring(0, 1).ToUpper();
+    }
+
+    private void ToProfile()
+    {
+        Navigation.NavigateTo("/profile");
     }
 
     private async Task LogOut()

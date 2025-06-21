@@ -1,11 +1,18 @@
-﻿@using MudBlazor
+﻿@using LocalReads.Services
+@using LocalReads.State
+@using MudBlazor
 @inherits LayoutComponentBase
+@inject AppState AppState
+@inject IAuthService AuthService
+
 <MudLayout>
     <div class="sidebar">
         <NavMenu />
     </div>
-    <MudMainContent Class="content"> 
+    <MudMainContent Class="content">
+        @* <CascadingValue Value="@AppState"> *@
         @Body
+        @* </CascadingValue> *@
     </MudMainContent>
 </MudLayout>
 
@@ -21,4 +28,11 @@
 
 @code
 {
+    protected override async Task OnInitializedAsync()
+    {
+        if (AppState.UserState.User == null)
+        {
+            await AuthService.PersistLoggedInUser();
+        }
+    }
 }
