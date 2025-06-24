@@ -5,6 +5,8 @@
 @inject IHttpRequest HttpRequest
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
+@inject IDialogService DialogService
+
 
 <MudContainer>
     <MudItem xs="12" sm="7">
@@ -25,15 +27,35 @@
 
 @code {
     public RegisterUser RegisterUser { get; set; } = new RegisterUser();
-    
+
     protected override async Task OnInitializedAsync()
     {
         if(await AuthService.IsLoggedIn())
             Navigation.NavigateTo("/");
     }
-    
+
     private async Task HandleRegister()
     {
-        await HttpRequest.Post<RegisterUser>(RegisterUser, "/users/register");
+        var res = await HttpRequest.SimplePost<RegisterUser>(RegisterUser, "/users/register");
+        if (res.Success)
+        {
+
+            var parameters = new DialogParameters
+            {
+                { "Title", "Registration" },
+                { "Message", "Register Successful" }
+            };
+
+            var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small };
+
+            var dialog = await DialogService.ShowAsync<GenericDialog>("", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result!.Canceled)
+            {
+                Navigation.NavigateTo("/login");
+            }
+           
+        }
     }
 }

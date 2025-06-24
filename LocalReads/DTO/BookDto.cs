@@ -16,7 +16,7 @@ public class BookDto
 
     public static BookDto FromBook(Book book)
     {
-        const int limit = 30;
+        const int limit = 50;
         var authors = book.VolumeInfo.Authors?
             .Aggregate((a, b) => $"{a}, {b}") ?? "";
         return new BookDto()
