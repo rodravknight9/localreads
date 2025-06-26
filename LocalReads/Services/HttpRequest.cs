@@ -54,6 +54,12 @@ public class HttpRequest : HttpClient, IHttpRequest
             var stringResult = await result.Content.ReadAsStringAsync();
             httpResult.StatusCode = result.StatusCode;
             httpResult.Success = (int)result.StatusCode >= 200 && (int)result.StatusCode < 300;
+
+            if (!httpResult.Success) 
+            {
+                httpResult.ErrorMessage = await result.Content.ReadAsStringAsync();
+            }
+
             return httpResult;
         }
         catch (Exception e)
@@ -61,6 +67,26 @@ public class HttpRequest : HttpClient, IHttpRequest
             httpResult.Success = false;
             httpResult.ErrorMessage = e.Message;
             return httpResult;
+            throw;
+        }
+    }
+
+    public async Task<HttpResponse<T>> Get<T>(string path)
+    {
+        var httpResult = new HttpResponse<T>();
+        try
+        {
+            var options = new JsonSerializerOptions{ PropertyNameCaseInsensitive = true };
+            var result = await _httpClient.GetAsync(path);
+            var stringResult = await result.Content.ReadAsStringAsync();
+            if (stringResult.Contains("'"))
+                stringResult = stringResult.Replace("'", string.Empty);
+            httpResult.Content = JsonSerializer.Deserialize<T>(stringResult, options)!;
+            return httpResult;
+        }
+        catch (Exception)
+        {
+
             throw;
         }
     }

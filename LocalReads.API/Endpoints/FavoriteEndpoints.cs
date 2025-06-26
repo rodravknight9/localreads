@@ -2,6 +2,8 @@
 using LocalReads.Shared.DataTransfer.Books;
 using LocalReads.Shared.Domain;
 using LocalReads.Shared.Enums;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace LocalReads.API.Endpoints;
 
@@ -12,14 +14,19 @@ public static class FavoriteEndpoints
         app.MapPost("/favorite", async (CreateFavorite favorite, LocalReadsContext db) =>
         {
             var bookExists = db.Books
-                .First(b => b.BookGoogleId == favorite.Book.BookGoogleId);
+                .FirstOrDefault(b => b.BookGoogleId == favorite.Book.BookGoogleId);
 
-            if(bookExists != null)
-                await db.Books.AddAsync(bookExists);
+            if (bookExists == null) 
+            {
+                await db.Books.AddAsync(favorite.Book);
+                await db.SaveChangesAsync();
+                bookExists = db.Books
+                    .FirstOrDefault(b => b.BookGoogleId == favorite.Book.BookGoogleId);
+            }
 
             var newFavorite = new Favorite
             {
-                BookId = bookExists.Id,
+                BookId = bookExists!.Id,
                 UserId = favorite.UserId                
             };
 
@@ -47,6 +54,23 @@ public static class FavoriteEndpoints
             db.SaveChanges();
 
             return Results.Created();
+        });
+
+        app.MapGet("/favorites/{userId}", async ([FromQuery] string type, [FromRoute] int userId, LocalReadsContext db) =>
+        {
+            var filterType = type switch
+            {
+                nameof(BookState.InProgress) => (int)BookState.InProgress,
+                nameof(BookState.AlreadyRead) => (int)BookState.AlreadyRead,
+                nameof(BookState.Abandoned) => (int)BookState.Abandoned,
+                nameof(BookState.Wishlist) => (int)BookState.Wishlist,
+                _ => 0
+            };
+
+            return db.Favorites
+                .AsNoTracking()
+                .Include(fav => fav.Book)
+                .Where(fav => fav.State == filterType && fav.UserId == userId);
         });
     }
 }

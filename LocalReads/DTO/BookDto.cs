@@ -4,6 +4,7 @@ namespace LocalReads.DTO;
 
 public class BookDto
 {
+    public string BookGoogleId { get; set; }
     public string Title { get; set; }
     public string Authors { get; set; }
     public string PublishedDate { get; set; }
@@ -33,7 +34,8 @@ public class BookDto
             PageCount = book.VolumeInfo.PageCount,
             Categories = book.VolumeInfo.Categories?.Aggregate((a, b) => $"{a}, {b}") ?? "",
             ImageLink = GetImageUrl(book.VolumeInfo.ImageLinks),
-            Language = book.VolumeInfo?.Language ?? ""
+            Language = book.VolumeInfo?.Language ?? "",
+            BookGoogleId = book.Id
         };
     }
 

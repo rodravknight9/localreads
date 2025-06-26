@@ -1,6 +1,8 @@
-@using LocalReads.DTO
-@using MudBlazor
+
 @inject IDialogService DialogService
+@inject IHttpRequest HttpRequest
+@inject AppState AppState
+@inject IAuthService AuthService 
 
 <MudCard Class="d-flex flex-row" Style="min-width: 300px; height: 150px; margin: 12px">
     <MudCardMedia Class="media-horizontal" Image="@Book.ImageLink" Style="width: 100px; height: 100%"/>
@@ -32,13 +34,34 @@
         {
             { "BookTitle", Book.Title }
         };
-        var dialog = await DialogService
-            .ShowAsync<AddToWishlistDialog>("Simple Dialog", paramsDialog, options);
+        var dialog = await DialogService.ShowAsync<AddToWishlistDialog>("Wishlist", paramsDialog, options);
         var result = await dialog.Result;
+
+        await AuthService.PersistLoggedInUser();
 
         if (!result.Canceled)
         {
-            // Handle confirmation
+            var book = new Book
+            {
+                Authors = Book.Authors,
+                Categories = Book.Categories,
+                Description = Book.Description,
+                ImageLink = Book.ImageLink,
+                BookGoogleId = Book.BookGoogleId,
+                Language = Book.Language,
+                PageCount = Book.PageCount,
+                PublishedDate = Book.PublishedDate, 
+                Publisher = Book.Publisher,
+                Title = Book.Title
+            };
+
+            var favoriteBook = new CreateFavorite();
+            favoriteBook.State = (int)BookState.InProgress;
+            favoriteBook.Progress = 0;
+            favoriteBook.Book = book;
+            favoriteBook.UserId = AppState.UserState.User.Id;
+
+            await HttpRequest.SimplePost(favoriteBook, "/favorite");
         }
     }
 

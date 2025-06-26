@@ -1,0 +1,54 @@
+@page "/mybooks"
+@inject IHttpRequest HttpRequest
+@inject AppState AppState
+@inject IAuthService AuthService
+
+<MudElement Class="d-flex flex-row">
+
+    <MudElement>
+        <MudList T="string">
+            <MudListItem Text="In Progress" />
+            <MudListItem Text="Read" />
+            <MudListItem Text="Want to Read" />
+            <MudListItem Text="Abandoned" />
+            <MudListItem Text="Books in my Home" />
+        </MudList>
+    </MudElement>
+
+    <MudTable Items="@_favorites" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info">
+        <HeaderContent>
+            <MudTh>Cover</MudTh>
+            <MudTh>Title</MudTh>
+            <MudTh>Authors</MudTh>
+            <MudTh>Rating</MudTh>
+            <MudTh>Average Rating</MudTh>
+            <MudTh>Date Read</MudTh>
+            <MudTh>Comments</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd><MudImage Src="@context.Book.ImageLink" Width="40" /></MudTd>
+            <MudTd DataLabel="Nr">@context.Book.Title</MudTd>
+            <MudTd DataLabel="Nr">@context.Book.Authors</MudTd>
+            <MudTd DataLabel="Nr">5</MudTd>
+            <MudTd DataLabel="Nr">3.5</MudTd>
+            <MudTd DataLabel="Nr">@context.ReadTime</MudTd>
+            <MudTd DataLabel="Nr"><a style="color:blue; text-decoration: underline;">Add a comment</a></MudTd>
+            <MudTd DataLabel="Nr"><a style="color:blue; text-decoration: underline">Edit</a> &nbsp; <a style="color:blue; text-decoration: underline">View</a></MudTd>
+        </RowTemplate>
+    </MudTable>
+
+
+</MudElement>
+
+
+@code {
+    private List<Favorite> _favorites { get; set; } = new List<Favorite>();
+    protected override async Task OnInitializedAsync()
+    {
+        //TODO: Get rid of this, need to be persisiting with the User State
+        await AuthService.PersistLoggedInUser();
+        var userId = AppState.UserState.User.Id;
+        _favorites = (await HttpRequest.Get<List<Favorite>>($"/favorites/{userId}?type=InProgress")).Content;
+    }
+}

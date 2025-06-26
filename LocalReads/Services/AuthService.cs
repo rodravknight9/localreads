@@ -26,6 +26,7 @@ public class AuthService : IAuthService
     }
     public async Task<bool> Login(Login login)
     {
+        //TODO: handle potential errors and propmt them to the user
         var res = await _httpRequest.Post<AuthResponse, Login>(login, "/users/login")!; ;
         _appState.UserState.OnUserLog(res.Content);
         await _localStorage.SetItemAsync("userState", res.Content);

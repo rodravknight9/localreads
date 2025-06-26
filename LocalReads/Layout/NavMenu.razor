@@ -1,8 +1,4 @@
-﻿@using LocalReads.Components
-@using LocalReads.Services
-@using LocalReads.State
-@using MudBlazor
-@using Microsoft.AspNetCore.Components.Authorization
+﻿
 @inject IOpenLibraryService GoogleBooksService
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
@@ -12,7 +8,7 @@
     <MudText Typo="Typo.h5">LocalReads</MudText>
     <AuthorizeView>
         <Authorized>
-            <a href="/home" Class="custom-link d-flex justify-center align-center">
+            <a href="/" Class="custom-link d-flex justify-center align-center">
                 Home
             </a>
             <a href="/mybooks" Class="custom-link d-flex justify-center align-center">

@@ -1,10 +1,7 @@
 ﻿using System.Text.Json.Serialization;
+using System.Collections.Generic;
 
 namespace LocalReads.Models;
-
-using System;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 public class Root
 {

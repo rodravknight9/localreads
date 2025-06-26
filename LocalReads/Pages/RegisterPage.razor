@@ -1,7 +1,5 @@
 ﻿@page "/register"
-@using LocalReads.Services
-@using LocalReads.Shared.DataTransfer.User
-@using MudBlazor
+
 @inject IHttpRequest HttpRequest
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
@@ -37,25 +35,23 @@
     private async Task HandleRegister()
     {
         var res = await HttpRequest.SimplePost<RegisterUser>(RegisterUser, "/users/register");
-        if (res.Success)
+        var userMessage = res.Success ? "Registration was successful" : res.ErrorMessage;
+
+        var parameters = new DialogParameters
         {
+            { "Title", "Registration" },
+            { "Message", userMessage }
+        };
 
-            var parameters = new DialogParameters
-            {
-                { "Title", "Registration" },
-                { "Message", "Register Successful" }
-            };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small };
 
-            var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small };
+        var dialog = await DialogService.ShowAsync<GenericDialog>("", parameters, options);
+        var result = await dialog.Result;
 
-            var dialog = await DialogService.ShowAsync<GenericDialog>("", parameters, options);
-            var result = await dialog.Result;
-
-            if (!result!.Canceled)
-            {
-                Navigation.NavigateTo("/login");
-            }
-           
+        if (!result!.Canceled && res.Success)
+        {
+            Navigation.NavigateTo("/login");
         }
+
     }
 }
