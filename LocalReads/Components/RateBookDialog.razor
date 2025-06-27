@@ -1,0 +1,40 @@
+﻿<MudDialog>
+    <TitleContent>
+        Rate Book "@BookTitle"
+    </TitleContent>
+    <DialogContent>
+        <MudElement Class="d-flex flex-column">
+            <MudIcon Class="cursor-pointer"
+                     Icon="@Icons.Material.Filled.Star"
+                     Color="Color.Warning" Title="Favorite" />
+            <MudSlider 
+                @bind-Value="Rating" 
+                Min="1" 
+                Max="5" 
+                Step="0.5" 
+                Color="Color.Warning">
+                    Rating: @Rating.ToString("F2")
+            </MudSlider>
+        </MudElement>
+    </DialogContent>
+    <DialogActions>
+
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public string BookTitle { get; set; }
+    [Parameter] public double Rating { get; set; } = 0;
+
+
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(Rating));
+
+    private void Cancel() => MudDialog.Cancel();
+}

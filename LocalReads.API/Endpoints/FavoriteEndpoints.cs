@@ -1,5 +1,6 @@
 ﻿using LocalReads.API.Context;
 using LocalReads.Shared.DataTransfer.Books;
+using LocalReads.Shared.DataTransfer.Favorites;
 using LocalReads.Shared.Domain;
 using LocalReads.Shared.Enums;
 using Microsoft.AspNetCore.Mvc;
@@ -71,6 +72,26 @@ public static class FavoriteEndpoints
                 .AsNoTracking()
                 .Include(fav => fav.Book)
                 .Where(fav => fav.State == filterType && fav.UserId == userId);
+        });
+
+        app.MapPost("/favorite/rate", async (RateBook bookRate, LocalReadsContext db) =>
+        {
+            var favorite = await db.Favorites.SingleAsync(fav => fav.UserId == bookRate.UserId && fav.Id == bookRate.FavoriteId);
+            if (favorite != null)
+            { 
+                favorite.Rating = bookRate.Rating;
+                db.SaveChanges();
+            }
+
+            return Results.Ok();
+        });
+
+        app.MapDelete("/favorite/{favoriteId}", async (int favoriteId, LocalReadsContext db) =>
+        {
+            var fav = await db.Favorites.SingleAsync(fav => fav.Id == favoriteId);
+            db.Favorites.Remove(fav);
+            await db.SaveChangesAsync();
+            return Results.NoContent();
         });
     }
 }

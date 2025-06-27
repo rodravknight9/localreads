@@ -1,7 +1,11 @@
 @page "/mybooks"
+@using LocalReads.Shared.DataTransfer.Favorites
 @inject IHttpRequest HttpRequest
-@inject AppState AppState
+@inject IDialogService DialogService
 @inject IAuthService AuthService
+@inject IHttpRequest HttpRequest
+@inject IAuthService AuthService
+@inject AppState AppState
 
 <MudElement Class="d-flex flex-row">
 
@@ -15,7 +19,16 @@
         </MudList>
     </MudElement>
 
-    <MudTable Items="@_favorites" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info">
+    <MudTable 
+        Items="@_favorites" 
+        Hover="true" 
+        Breakpoint="Breakpoint.Sm" 
+        LoadingProgressColor="Color.Info"
+        HorizontalScrollbar="true"
+        Height="600px"
+        FixedHeader="true" 
+
+    >
         <HeaderContent>
             <MudTh>Cover</MudTh>
             <MudTh>Title</MudTh>
@@ -30,11 +43,27 @@
             <MudTd><MudImage Src="@context.Book.ImageLink" Width="40" /></MudTd>
             <MudTd DataLabel="Nr">@context.Book.Title</MudTd>
             <MudTd DataLabel="Nr">@context.Book.Authors</MudTd>
-            <MudTd DataLabel="Nr">5</MudTd>
+            <MudTd DataLabel="Nr">
+                <MudElement Class="d-flex align-center">
+                    <MudIcon 
+                        Class="cursor-pointer" 
+                        Icon="@Icons.Material.Filled.Star" 
+                        Color="Color.Warning" Title="Favorite" 
+                        @onclick="@( e => RateBook(@context))"
+                        />
+                    <MudText Typo="Typo.body2">@context.Rating</MudText>
+                </MudElement>
+            </MudTd>
             <MudTd DataLabel="Nr">3.5</MudTd>
-            <MudTd DataLabel="Nr">@context.ReadTime</MudTd>
+            <MudTd DataLabel="Nr">@FormatDate(@context.ReadTime)</MudTd>
             <MudTd DataLabel="Nr"><a style="color:blue; text-decoration: underline;">Add a comment</a></MudTd>
-            <MudTd DataLabel="Nr"><a style="color:blue; text-decoration: underline">Edit</a> &nbsp; <a style="color:blue; text-decoration: underline">View</a></MudTd>
+            <MudTd DataLabel="Nr" Class="d-flex align-center">
+                <MudElement>
+                    <a style="color:blue; text-decoration: underline">Edit</a> 
+                    <a style="color:blue; text-decoration: underline">View</a>
+                </MudElement>
+                <MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.Delete" Color="Color.Error" />
+            </MudTd>
         </RowTemplate>
     </MudTable>
 
@@ -50,5 +79,42 @@
         await AuthService.PersistLoggedInUser();
         var userId = AppState.UserState.User.Id;
         _favorites = (await HttpRequest.Get<List<Favorite>>($"/favorites/{userId}?type=InProgress")).Content;
+    }
+
+    private async Task RateBook(Favorite favorite)
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var paramsDialog = new DialogParameters
+        {
+            { "BookTitle", favorite.Book.Title },
+            { "Rating", favorite.Rating }
+        };
+        var dialog = await DialogService.ShowAsync<RateBookDialog>("Wishlist", paramsDialog, options);
+        var result = await dialog.Result;
+        if (result != null && !result.Canceled)
+        {
+            var rate = (double)result.Data!;
+            await AuthService.PersistLoggedInUser();
+            var bookRating = new RateBook
+            {
+                FavoriteId = favorite.Id,
+                Rating = rate,
+                UserId = AppState.UserState.User.Id
+            };
+            await HttpRequest.SimplePost(bookRating, "/favorite/rate");
+
+            var bookToUpdateInUi = _favorites.First(fav => fav.Id == favorite.Id);
+            bookToUpdateInUi.Rating = rate;
+        }
+    }
+
+    private string FormatDate(DateTime dateRead)
+    {
+        if (dateRead.Year >= 1900)
+        {
+            return dateRead.Date.ToString();    
+        }
+
+        return "--";
     }
 }
