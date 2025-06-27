@@ -9,9 +9,9 @@
     <DialogActions>
         @if (HasCancelEvent)
         {
-            <MudButton OnClick="Cancel">Cancel</MudButton>
+            <MudButton OnClick="Cancel">@NegativeText</MudButton>
         }
-        <MudButton Color="Color.Primary" OnClick="Submit">OK</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">@AfirmativeText</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -23,6 +23,8 @@
     [Parameter] public string Title { get; set; }
     [Parameter] public string Message { get; set; }
     [Parameter] public bool HasCancelEvent { get; set; }
+    [Parameter] public string AfirmativeText { get; set; } = "OK";
+    [Parameter] public string NegativeText { get; set; } = "Cancel";
 
     private void Submit() => MudDialog.Close(DialogResult.Ok(true));
 

@@ -40,10 +40,10 @@ public static class UserEndpoints
                 .FirstOrDefaultAsync();
 
             if (user == null)
-                return Results.BadRequest("User already exists");
+                return Results.BadRequest("User does not exist");
 
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
-                return Results.BadRequest("User already exists");
+                return Results.BadRequest("Wrong password");
 
 
             var response = new AuthResponse 

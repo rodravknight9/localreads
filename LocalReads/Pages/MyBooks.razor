@@ -62,7 +62,11 @@
                     <a style="color:blue; text-decoration: underline">Edit</a> 
                     <a style="color:blue; text-decoration: underline">View</a>
                 </MudElement>
-                <MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.Delete" Color="Color.Error" />
+                <MudIcon 
+                    Class="cursor-pointer" 
+                    Icon="@Icons.Material.Filled.Delete" 
+                    Color="Color.Error"
+                    @onclick="@(e => DeleteFavorite(@context))" />
             </MudTd>
         </RowTemplate>
     </MudTable>
@@ -117,4 +121,27 @@
 
         return "--";
     }
+
+    private async Task DeleteFavorite(Favorite favorite)
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var paramsDialog = new DialogParameters
+        {
+            { "Title", "Delete from list"},
+            { "Message", $@"Do you want to delete ""{favorite.Book.Title}""" },
+            { "AfirmativeText", "Yes"},
+            { "NegativeText", "No"},
+            { "HasCancelEvent", true }
+        };
+
+        var dialog = await DialogService.ShowAsync<GenericDialog>(null, paramsDialog, options);
+        var result = await dialog.Result;
+        if (result != null && !result.Canceled)
+        {
+            await HttpRequest.Delete($"/favorite/{favorite.Id}");
+            _favorites.Remove(favorite);
+        }
+    }
+
+
 }

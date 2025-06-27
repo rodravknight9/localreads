@@ -90,4 +90,13 @@ public class HttpRequest : HttpClient, IHttpRequest
             throw;
         }
     }
+
+    public async Task<SimpleHttpResponse> Delete(string path)
+    {
+        var httpResult = new SimpleHttpResponse();
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var result = await _httpClient.DeleteAsync(path);
+        httpResult.Success = result.IsSuccessStatusCode; 
+        return httpResult;
+    }
 }
