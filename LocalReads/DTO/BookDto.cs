@@ -15,27 +15,38 @@ public class BookDto
     public string ImageLink { get; set; }
     public string Language { get; set; }
 
-    public static BookDto FromBook(Book book)
+    //TODO: too much ambiguity in Books classes
+    public static BookDto FromBook(LocalReads.Models.Book book)
     {
-        const int limit = 50;
-        var authors = book.VolumeInfo.Authors?
-            .Aggregate((a, b) => $"{a}, {b}") ?? "";
         return new BookDto()
         {
-            Title = book.VolumeInfo.Title.Length >= limit 
-                ? book.VolumeInfo.Title.Substring(0, limit) + "..."
-                : book.VolumeInfo.Title,
-            Authors = authors.Length >= limit 
-                ? authors.Substring(0, limit) 
-                : authors + "...",
+            Title = book.VolumeInfo.Title,
+            Authors = book.VolumeInfo.Authors?.Aggregate((a, b) => $"{a}, {b}") ?? "",
             Publisher = book.VolumeInfo?.Publisher ?? "",
             PublishedDate = book.VolumeInfo?.PublishedDate ?? "",
             Description = book.VolumeInfo?.Description ?? "",
-            PageCount = book.VolumeInfo.PageCount,
+            PageCount = book.VolumeInfo?.PageCount ?? 0,
             Categories = book.VolumeInfo.Categories?.Aggregate((a, b) => $"{a}, {b}") ?? "",
             ImageLink = GetImageUrl(book.VolumeInfo.ImageLinks),
             Language = book.VolumeInfo?.Language ?? "",
             BookGoogleId = book.Id
+        };
+    }
+
+    public static Shared.Domain.Book ToBookDomain(BookDto book)
+    {
+        return new Shared.Domain.Book
+        {
+            Authors = book.Authors,
+            Categories = book.Categories,
+            Description = book.Description,
+            ImageLink = book.ImageLink,
+            BookGoogleId = book.BookGoogleId,
+            Language = book.Language,
+            PageCount = book.PageCount,
+            PublishedDate = book.PublishedDate,
+            Publisher = book.Publisher,
+            Title = book.Title
         };
     }
 

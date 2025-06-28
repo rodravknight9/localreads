@@ -1,0 +1,60 @@
+﻿@using System.Text.RegularExpressions
+<MudDialog>
+    <TitleContent>
+        Save to the "@ParseBookType(@ListType)" list
+    </TitleContent>
+    <DialogContent>
+        Are you sure you want to save "@BookTitle" to "@ParseBookType(@ListType)"?
+        @if (ListType.Equals(BookState.InProgress.ToString()))
+        {
+            <MudPaper Class="pa-16 ma-2">
+                <MudSlider @bind-Value="Favorite.Progress"
+                           Min="0"
+                           Max="100"
+                           Step="1"
+                           Color="Color.Warning">
+                    Book Progress: @Favorite.Progress.ToString("F2")
+                </MudSlider>
+            </MudPaper>
+        }
+        @if (ListType.Equals(BookState.AlreadyRead.ToString()))
+        {
+            <MudPaper Class="pa-16 ma-2">
+                @* <MudTextField @bind-Value="Favorite.ReadTime" Label="Enter the Finish Date" /> *@
+                <MudDatePicker Date="@Favorite.ReadTime" DateChanged="OnDateChange" Label="Enter the Finish Date" />
+            </MudPaper>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Yes</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+    [Parameter]
+    public string BookTitle { get; set; } = "";
+    [Parameter]
+    public string ListType { get; set; } = "";
+
+    private CreateFavorite Favorite { get; set; } = new CreateFavorite();
+
+    protected override void OnInitialized()
+    {
+        Favorite.ReadTime = DateTime.Now;
+    }
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(Favorite));
+    private void Cancel() => MudDialog.Cancel();
+
+    private string ParseBookType(string type) => Regex.Replace(type.ToString(), @"([a-z])([A-Z])", "$1 $2");
+
+    void OnDateChange(DateTime? newDate)
+    {
+        if(newDate != null)
+            Favorite.ReadTime = (DateTime)newDate;
+    }
+
+}

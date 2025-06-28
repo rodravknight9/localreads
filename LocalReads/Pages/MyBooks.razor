@@ -1,8 +1,6 @@
 @page "/mybooks"
 @using LocalReads.Shared.DataTransfer.Favorites
-@inject IHttpRequest HttpRequest
 @inject IDialogService DialogService
-@inject IAuthService AuthService
 @inject IHttpRequest HttpRequest
 @inject IAuthService AuthService
 @inject AppState AppState
@@ -93,7 +91,7 @@
             { "BookTitle", favorite.Book.Title },
             { "Rating", favorite.Rating }
         };
-        var dialog = await DialogService.ShowAsync<RateBookDialog>("Wishlist", paramsDialog, options);
+        var dialog = await DialogService.ShowAsync<RateBookDialog>("", paramsDialog, options);
         var result = await dialog.Result;
         if (result != null && !result.Canceled)
         {

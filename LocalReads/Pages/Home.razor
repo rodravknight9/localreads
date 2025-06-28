@@ -1,17 +1,54 @@
 ﻿@page "/"
+@using System.Text.RegularExpressions
 @inject IOpenLibraryService OpenLibraryService
-@inject AppState AppState
+@inject IDialogService DialogService
 @inject IAuthService AuthService
+@inject IHttpRequest HttpRequest
+@inject AppState AppState
 
 <MudText>Resultados de: @AppState.SearchResults.TermSearch</MudText>
 <MudDivider Style="margin-bottom: 2rem"/>
 
-<MudGrid>
-    @foreach(BookDto book in AppState.SearchResults.Books)
-    {
-        <BookCard Book="@book" />
-    }
-</MudGrid>
+<MudTable Items="@AppState.SearchResults.Books"
+          Hover="true"
+          Breakpoint="Breakpoint.Sm"
+          LoadingProgressColor="Color.Info"
+          HorizontalScrollbar="true"
+          Height="600px"
+          FixedHeader="true">
+    <HeaderContent>
+        <MudTh>Cover</MudTh>
+        <MudTh>Title</MudTh>
+        <MudTh>Authors</MudTh>
+        <MudTh>Publisher</MudTh>
+        <MudTh>Page Count</MudTh>
+        <MudTh>Published Date</MudTh>
+        <MudTh>Categories</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd><MudImage Src="@context.ImageLink" Width="40" /></MudTd>
+        <MudTd DataLabel="Nr">@context.Title</MudTd>
+        <MudTd DataLabel="Nr">@context.Authors</MudTd>
+        <MudTd DataLabel="Nr">@context.Publisher</MudTd>
+        <MudTd DataLabel="Nr">@context.PageCount</MudTd>
+        <MudTd DataLabel="Nr">@context.PublishedDate</MudTd>
+        <MudTd DataLabel="Nr">@context.Categories</MudTd>
+        <MudTd DataLabel="Nr" Class="d-flex align-center">
+            <MudCardActions Class="d-flex justify-end">
+                <MudMenu StartIcon="@Icons.Material.Filled.More"
+                         Color="Color.Dark"
+                         Variant="Variant.Text"
+                         Label="More">
+                    <MudMenuItem @onclick="@(e => AddToFavorites(@context, BookState.WantToRead))">Add to the Want to Read list</MudMenuItem>
+                    <MudMenuItem @onclick="@(e => AddToFavorites(@context, BookState.InProgress))">Mark as In Progress</MudMenuItem>
+                    <MudMenuItem @onclick="@(e => AddToFavorites(@context, BookState.AlreadyRead))">Add as Read</MudMenuItem>
+                    <MudMenuItem @onclick="@(e => AddToFavorites(@context, BookState.Abandoned))">Add as Abandoned</MudMenuItem>
+                </MudMenu>
+            </MudCardActions>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
 
 @code
 {
@@ -32,9 +69,40 @@
         }
 
     }
-    
+
     public void Dispose()
     {
         AppState.SearchResults.OnChange -= StateHasChanged;
+    }
+
+    private async Task AddToFavorites(BookDto book, BookState listType)
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var paramsDialog = new DialogParameters
+        {
+            { "BookTitle", book.Title },
+            { "ListType", listType.ToString() }
+        };
+
+        var dialog = await DialogService.ShowAsync<AddToListDialog>("", paramsDialog, options);
+        var result = await dialog.Result;
+        if (result != null && result.Canceled)
+        {
+            return;    
+        }
+
+        var dialogData = (CreateFavorite)result!.Data!;
+        await AuthService.PersistLoggedInUser();
+
+        var bookToAdd = BookDto.ToBookDomain(book);
+        var favoriteBook = new CreateFavorite();
+        favoriteBook.Book = bookToAdd;
+        favoriteBook.UserId = AppState.UserState.User.Id;
+        favoriteBook.State = (int)listType;
+        favoriteBook.ReadTime = dialogData.ReadTime;
+        favoriteBook.Progress = dialogData.Progress;
+
+        await HttpRequest.SimplePost(favoriteBook, "/favorite");
+
     }
 }

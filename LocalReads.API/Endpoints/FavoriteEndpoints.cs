@@ -42,8 +42,8 @@ public static class FavoriteEndpoints
                     newFavorite.Progress = 100;
                     newFavorite.ReadTime = favorite.ReadTime;
                     break;
-                case (int)BookState.Wishlist:
-                    newFavorite.State = (int)BookState.Wishlist;
+                case (int)BookState.WantToRead:
+                    newFavorite.State = (int)BookState.WantToRead;
                     newFavorite.Progress = 0;
                     break;
                 case (int)BookState.Abandoned:
@@ -64,7 +64,7 @@ public static class FavoriteEndpoints
                 nameof(BookState.InProgress) => (int)BookState.InProgress,
                 nameof(BookState.AlreadyRead) => (int)BookState.AlreadyRead,
                 nameof(BookState.Abandoned) => (int)BookState.Abandoned,
-                nameof(BookState.Wishlist) => (int)BookState.Wishlist,
+                nameof(BookState.WantToRead) => (int)BookState.WantToRead,
                 _ => 0
             };
 
