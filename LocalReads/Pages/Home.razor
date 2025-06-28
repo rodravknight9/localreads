@@ -15,7 +15,8 @@
           LoadingProgressColor="Color.Info"
           HorizontalScrollbar="true"
           Height="600px"
-          FixedHeader="true">
+          FixedHeader="true"
+          ServerData="TableReload" Dense="true">
     <HeaderContent>
         <MudTh>Cover</MudTh>
         <MudTh>Title</MudTh>
@@ -48,6 +49,9 @@
             </MudCardActions>
         </MudTd>
     </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
 </MudTable>
 
 @code
@@ -103,6 +107,30 @@
         favoriteBook.Progress = dialogData.Progress;
 
         await HttpRequest.SimplePost(favoriteBook, "/favorite");
+
+    }
+
+    private async Task<TableData<BookDto>> TableReload(TableState state, CancellationToken token)
+    {
+        try
+        {
+            var booksData = await OpenLibraryService.GetBooksRange(
+            AppState.SearchResults.TermSearch, state.Page, state.PageSize);
+            var items = booksData.Items.Select(BookDto.FromBook);
+            return new TableData<BookDto>()
+            {
+                TotalItems = booksData.TotalItems,
+                Items = items
+            };
+        }
+        catch (Exception)
+        {
+            return new TableData<BookDto>()
+            {
+                Items = AppState.SearchResults.Books,
+                TotalItems = AppState.SearchResults.Books.Count()
+            };
+        }        
 
     }
 }

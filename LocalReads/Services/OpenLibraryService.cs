@@ -39,4 +39,11 @@ public class OpenLibraryService : IOpenLibraryService
         var root = JsonSerializer.Deserialize<Root>(rawResponse);
         return root!.Items;
     }
+
+    public async Task<Root> GetBooksRange(string search, int index, int limit) 
+    {
+        var rawResponse = await _httpClient.GetStringAsync($"?q={search}&startIndex={index}&maxResults={limit}");
+        var root = JsonSerializer.Deserialize<Root>(rawResponse);
+        return root!;
+    }
 }

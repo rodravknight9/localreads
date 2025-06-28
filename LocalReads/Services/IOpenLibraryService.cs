@@ -6,5 +6,6 @@ namespace LocalReads.Services
     {
         public Task<IEnumerable<Book>> GetRandomBooks();
         public Task<IEnumerable<Book>> GetBySearch(string search);
+        public Task<Root> GetBooksRange(string search, int index, int limit);
     }
 }
