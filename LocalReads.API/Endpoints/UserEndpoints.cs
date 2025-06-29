@@ -2,6 +2,7 @@
 using LocalReads.API.Context;
 using LocalReads.Shared.DataTransfer.User;
 using LocalReads.Shared.Domain;
+using LocalReads.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -54,6 +55,24 @@ public static class UserEndpoints
                 Jwt = GenerateJwtToken(user, jwtSettings.Value)
             };
             return Results.Created($"/users/{user.Id}", response);
+        });
+
+        app.MapGet("/users", (LocalReadsContext db) =>
+        {
+            var users = db.Users.AsNoTracking().ToList();
+            var userResponse = users.Select(u => new UserResponse
+            {
+                Id = u.Id,
+                BirthDate = u.BirthDate,
+                Name = u.Name,
+                Location = u.Location,
+                MemberSince = u.MemberSince,
+                PersonalIntroduction = u.PersonalIntroduction,
+                UserName = u.UserName,
+                CurrentlyReading = db.Favorites.Count(fav => fav.User.Id == u.Id && fav.State == (int)BookState.InProgress),
+                FavoriteBooksCount = db.Favorites.Count(fav => fav.User.Id == u.Id)
+            });
+            return userResponse;
         });
     }
 

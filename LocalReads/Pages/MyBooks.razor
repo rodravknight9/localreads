@@ -37,7 +37,14 @@
             <MudTh>Authors</MudTh>
             <MudTh>Rating</MudTh>
             <MudTh>Average Rating</MudTh>
-            <MudTh>Date Read</MudTh>
+            @if (_listType.Equals(BookState.InProgress.ToString()))
+            {
+                <MudTh>Progress</MudTh>
+            }
+            else
+            {
+                <MudTh>Date Read</MudTh>
+            }
             <MudTh>Comments</MudTh>
             <MudTh>Actions</MudTh>
         </HeaderContent>
@@ -57,7 +64,19 @@
                 </MudElement>
             </MudTd>
             <MudTd DataLabel="Nr">3.5</MudTd>
-            <MudTd DataLabel="Nr">@FormatDate(@context.ReadTime)</MudTd>
+
+            @if (_listType.Equals(BookState.InProgress.ToString()))
+            {
+                <MudTd DataLabel="Nr">
+                    <MudText>@context.Progress %</MudText>
+                    <MudProgressLinear Color="Color.Primary" Size="Size.Small" Value="@context.Progress" />
+                </MudTd>
+            }
+            else
+            {
+                <MudTd DataLabel="Nr">@FormatDate(@context.ReadTime)</MudTd>
+            }
+            
             <MudTd DataLabel="Nr"><a style="color:blue; text-decoration: underline;">Add a comment</a></MudTd>
             <MudTd DataLabel="Nr" Class="d-flex align-center">
                 <MudElement>
