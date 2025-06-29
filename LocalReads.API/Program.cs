@@ -1,7 +1,10 @@
 using LocalReads.API.Configurations;
 using LocalReads.API.Context;
 using LocalReads.API.Endpoints;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +17,27 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSet
 //builder.Services.AddOpenApi();
 builder.Services.AddDbContext<LocalReadsContext>(options =>
     options.UseSqlite("Data Source=app.db"));
+
+builder.Services.AddAuthentication(opt =>
+{
+    opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(opt =>
+{
+    opt.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero,
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+        IssuerSigningKey =
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]!))
+    };
+});
 
 
 var app = builder.Build();

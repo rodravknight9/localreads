@@ -7,17 +7,21 @@
 
 <MudElement Class="d-flex flex-row">
 
-    <MudElement>
-        <MudList T="string">
-            <MudListItem Text="In Progress" />
-            <MudListItem Text="Read" />
-            <MudListItem Text="Want to Read" />
-            <MudListItem Text="Abandoned" />
-            <MudListItem Text="Books in my Home" />
-        </MudList>
-    </MudElement>
+    <MudSelect Style="width: 200px; max-width: 200px; margin-right: 10px;"
+        Variant="Variant.Outlined"
+        T="string"
+        Value="@_listType"
+        ValueChanged="OnCategoryChanged"
+    >
+        <MudSelectItem Value="@BookState.WantToRead.ToString()">Want To Read</MudSelectItem>
+        <MudSelectItem Value="@BookState.AlreadyRead.ToString()">Already read</MudSelectItem>
+        <MudSelectItem Value="@BookState.InProgress.ToString()">In Progress</MudSelectItem>
+        <MudSelectItem Value="@BookState.Abandoned.ToString()">Abandoned</MudSelectItem>
+        <MudSelectItem Value="@BookState.Abandoned.ToString()">My Server</MudSelectItem>
+    </MudSelect>
 
     <MudTable 
+        @ref="_favTable"
         Items="@_favorites" 
         Hover="true" 
         Breakpoint="Breakpoint.Sm" 
@@ -68,19 +72,19 @@
             </MudTd>
         </RowTemplate>
     </MudTable>
-
-
 </MudElement>
 
 
 @code {
     private List<Favorite> _favorites { get; set; } = new List<Favorite>();
+    private string _listType = BookState.WantToRead.ToString();
+    private MudTable<Favorite> _favTable;
     protected override async Task OnInitializedAsync()
     {
         //TODO: Get rid of this, need to be persisiting with the User State
         await AuthService.PersistLoggedInUser();
         var userId = AppState.UserState.User.Id;
-        _favorites = (await HttpRequest.Get<List<Favorite>>($"/favorites/{userId}?type=InProgress")).Content;
+        _favorites = (await HttpRequest.Get<List<Favorite>>($"/favorites/{userId}?type={_listType}")).Content;
     }
 
     private async Task RateBook(Favorite favorite)
@@ -141,5 +145,15 @@
         }
     }
 
-
+    private async Task OnCategoryChanged(string listType)
+    {
+        if (_favTable != null)
+        {
+            _listType = listType;
+            await AuthService.PersistLoggedInUser();
+            var userId = AppState.UserState.User.Id;
+            _favorites = (await HttpRequest.Get<List<Favorite>>($"/favorites/{userId}?type={listType}")).Content;
+            await _favTable.ReloadServerData();       
+        }
+    }
 }
