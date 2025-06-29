@@ -9,14 +9,16 @@
 <MudText>Resultados de: @AppState.SearchResults.TermSearch</MudText>
 <MudDivider Style="margin-bottom: 2rem"/>
 
-<MudTable Items="@AppState.SearchResults.Books"
-          Hover="true"
-          Breakpoint="Breakpoint.Sm"
-          LoadingProgressColor="Color.Info"
-          HorizontalScrollbar="true"
-          Height="600px"
-          FixedHeader="true"
-          ServerData="TableReload" Dense="true">
+<MudTable 
+    @ref="_table"
+    Items="@AppState.SearchResults.Books"
+    Hover="true"
+    Breakpoint="Breakpoint.Sm"
+    LoadingProgressColor="Color.Info"
+    HorizontalScrollbar="true"
+    Height="600px"
+    FixedHeader="true"
+    ServerData="TableReload" Dense="true">
     <HeaderContent>
         <MudTh>Cover</MudTh>
         <MudTh>Title</MudTh>
@@ -56,17 +58,24 @@
 
 @code
 {
+    private MudTable<BookDto> _table;
+    private int _guardOldPageIndex = -1;
+    private string _guardOldSearch = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
-        AppState.SearchResults.OnChange += StateHasChanged;
 
         if (string.IsNullOrEmpty(AppState.SearchResults.TermSearch))
         {
             var books = (await OpenLibraryService.GetRandomBooks())
                 .Select(BookDto.FromBook);
             AppState.SearchResults.SetSearchResults(books.ToList());
+            _guardOldSearch = AppState.SearchResults.TermSearch;
         }
 
+        // move the Trigger reload after the default data is filled up to avoid an infinte loop
+        AppState.SearchResults.OnChange += StateHasChanged;
+        AppState.SearchResults.OnBooksSearchChanged += TriggerReload;
         if (AppState.UserState.User == null)
         {
             await AuthService.PersistLoggedInUser();
@@ -77,6 +86,7 @@
     public void Dispose()
     {
         AppState.SearchResults.OnChange -= StateHasChanged;
+        AppState.SearchResults.OnBooksSearchChanged -= TriggerReload;
     }
 
     private async Task AddToFavorites(BookDto book, BookState listType)
@@ -116,7 +126,16 @@
         {
             var booksData = await OpenLibraryService.GetBooksRange(
             AppState.SearchResults.TermSearch, state.Page, state.PageSize);
+
             var items = booksData.Items.Select(BookDto.FromBook);
+
+            if (_guardOldPageIndex != state.Page || !_guardOldSearch.Equals(AppState.SearchResults.TermSearch))
+            {
+                AppState.SearchResults.SetSearchResults(items.ToList());
+                _guardOldPageIndex = state.Page;
+                _guardOldSearch = AppState.SearchResults.TermSearch;
+            }
+
             return new TableData<BookDto>()
             {
                 TotalItems = booksData.TotalItems,
@@ -133,4 +152,17 @@
         }        
 
     }
+
+    private async void TriggerReload()
+    {
+        await InvokeAsync(async () =>
+        {
+            if (_table != null)
+            {
+                await _table.ReloadServerData();
+                StateHasChanged();
+            }
+        });
+    }
+
 }
