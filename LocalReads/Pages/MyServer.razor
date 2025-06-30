@@ -1,17 +1,21 @@
 ﻿@page "/myserver"
 @inject IHttpRequest HttpRequest
+@inject NavigationManager Navigation
 
 <MudList T="UserResponse" Style="width:450px; max-width:450px;">
     @foreach (var user in Users)
     {
-        <MudListItem>
+        <MudListItem @onclick="@(e => GoToUser(@user.Id))">
             <AvatarContent>
                 <MudAvatar Color="Color.Tertiary">V</MudAvatar>
             </AvatarContent>
             <ChildContent>
                 <MudElement Class="d-flex justify-space-between flex-grow-1">
                     <MudElement Class="d-flex flex-column">
-                        <MudText Typo="Typo.body2">@user.Name</MudText>
+                        <MudText 
+                            Style="color: blue; text-decoration: underline" 
+                            Typo="Typo.body2"
+                            >@user.Name</MudText>
                         <MudText Typo="Typo.body2">@user.UserName</MudText>
                         <MudText Typo="Typo.body2">@user.Location</MudText>
                         <MudText Typo="Typo.body2">@user.FavoriteBooksCount books</MudText>
@@ -33,4 +37,10 @@
     {
         Users = (await HttpRequest.Get<List<UserResponse>>($"/users")).Content;
     }
+
+    private void GoToUser(int id)
+    {
+        Navigation.NavigateTo($"/profile/{id}");
+    }
+
 }

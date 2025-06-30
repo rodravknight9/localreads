@@ -1,168 +1,46 @@
-﻿@page "/"
-@using System.Text.RegularExpressions
-@inject IOpenLibraryService OpenLibraryService
-@inject IDialogService DialogService
-@inject IAuthService AuthService
+@page "/"
 @inject IHttpRequest HttpRequest
 @inject AppState AppState
+@inject IAuthService AuthService
+<MudContainer>
+    <MudElement Class="d-flex flex-column" Style="width: 40%">
+        <MudText Typo="Typo.body1" Class="mb-4">Currently Reading</MudText>
+        @foreach (var fav in _favorites)
+        {
+            <MudElement Class="d-flex">
+                <MudImage Src="@fav.Book.ImageLink" Width="90" Height="130" Class="mr-2"/>
+                <MudElement Class="d-flex flex-column">
+                    <MudLink 
+                        Href="/" 
+                        Underline="Underline.Always"
+                        Color="Color.Dark"
+                        Class="mb-1">@fav.Book.Title</MudLink>
+                    <MudText Typo="Typo.body1">by @fav.Book.Authors</MudText>
+                    <MudElement Class="mb-1">
+                        <MudProgressLinear 
+                            Color="Color.Success" 
+                            Size="Size.Medium" Value="@fav.Progress" />
+                        <MudText Typo="Typo.body2">@fav.Progress %</MudText>
+                    </MudElement>
+                    <MudButton 
+                         Variant="Variant.Outlined" 
+                         Size="Size.Small"
+                         Color="Color.Secondary">Update Progress</MudButton>
+                </MudElement>
+            </MudElement>
+        }
+    </MudElement>
+</MudContainer>
 
-<MudText>Resultados de: @AppState.SearchResults.TermSearch</MudText>
-<MudDivider Style="margin-bottom: 2rem"/>
-
-<MudTable 
-    @ref="_table"
-    Items="@AppState.SearchResults.Books"
-    Hover="true"
-    Breakpoint="Breakpoint.Sm"
-    LoadingProgressColor="Color.Info"
-    HorizontalScrollbar="true"
-    Height="550px"
-    FixedHeader="true"
-    ServerData="TableReload" Dense="true">
-    <HeaderContent>
-        <MudTh>Cover</MudTh>
-        <MudTh>Title</MudTh>
-        <MudTh>Authors</MudTh>
-        <MudTh>Publisher</MudTh>
-        <MudTh>Page Count</MudTh>
-        <MudTh>Published Date</MudTh>
-        <MudTh>Categories</MudTh>
-        <MudTh>Actions</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd><MudImage Src="@context.ImageLink" Width="40" /></MudTd>
-        <MudTd DataLabel="Nr">@context.Title</MudTd>
-        <MudTd DataLabel="Nr">@context.Authors</MudTd>
-        <MudTd DataLabel="Nr">@context.Publisher</MudTd>
-        <MudTd DataLabel="Nr">@context.PageCount</MudTd>
-        <MudTd DataLabel="Nr">@context.PublishedDate</MudTd>
-        <MudTd DataLabel="Nr">@context.Categories</MudTd>
-        <MudTd DataLabel="Nr" Class="d-flex align-center">
-            <MudCardActions Class="d-flex justify-end">
-                <MudMenu StartIcon="@Icons.Material.Filled.More"
-                         Color="Color.Dark"
-                         Variant="Variant.Text"
-                         Label="More">
-                    <MudMenuItem @onclick="@(e => AddToFavorites(@context, BookState.WantToRead))">Add to the Want to Read list</MudMenuItem>
-                    <MudMenuItem @onclick="@(e => AddToFavorites(@context, BookState.InProgress))">Mark as In Progress</MudMenuItem>
-                    <MudMenuItem @onclick="@(e => AddToFavorites(@context, BookState.AlreadyRead))">Add as Read</MudMenuItem>
-                    <MudMenuItem @onclick="@(e => AddToFavorites(@context, BookState.Abandoned))">Add as Abandoned</MudMenuItem>
-                </MudMenu>
-            </MudCardActions>
-        </MudTd>
-    </RowTemplate>
-    <PagerContent>
-        <MudTablePager />
-    </PagerContent>
-</MudTable>
-
-@code
-{
-    private MudTable<BookDto> _table;
-    private int _guardOldPageIndex = -1;
-    private string _guardOldSearch = string.Empty;
+@code {
+    private List<Favorite> _favorites { get; set; } = [];
 
     protected override async Task OnInitializedAsync()
     {
-
-        if (string.IsNullOrEmpty(AppState.SearchResults.TermSearch))
-        {
-            var books = (await OpenLibraryService.GetRandomBooks())
-                .Select(BookDto.FromBook);
-            AppState.SearchResults.SetSearchResults(books.ToList());
-            _guardOldSearch = AppState.SearchResults.TermSearch;
-        }
-
-        // move the Trigger reload after the default data is filled up to avoid an infinte loop
-        AppState.SearchResults.OnChange += StateHasChanged;
-        AppState.SearchResults.OnBooksSearchChanged += TriggerReload;
-        if (AppState.UserState.User == null)
-        {
-            await AuthService.PersistLoggedInUser();
-        }
-
-    }
-
-    public void Dispose()
-    {
-        AppState.SearchResults.OnChange -= StateHasChanged;
-        AppState.SearchResults.OnBooksSearchChanged -= TriggerReload;
-    }
-
-    private async Task AddToFavorites(BookDto book, BookState listType)
-    {
-        var options = new DialogOptions { CloseOnEscapeKey = true };
-        var paramsDialog = new DialogParameters
-        {
-            { "BookTitle", book.Title },
-            { "ListType", listType.ToString() }
-        };
-
-        var dialog = await DialogService.ShowAsync<AddToListDialog>("", paramsDialog, options);
-        var result = await dialog.Result;
-        if (result != null && result.Canceled)
-        {
-            return;    
-        }
-
-        var dialogData = (CreateFavorite)result!.Data!;
         await AuthService.PersistLoggedInUser();
-
-        var bookToAdd = BookDto.ToBookDomain(book);
-        var favoriteBook = new CreateFavorite();
-        favoriteBook.Book = bookToAdd;
-        favoriteBook.UserId = AppState.UserState.User.Id;
-        favoriteBook.State = (int)listType;
-        favoriteBook.ReadTime = dialogData.ReadTime;
-        favoriteBook.Progress = dialogData.Progress;
-
-        await HttpRequest.SimplePost(favoriteBook, "/favorite");
-
-    }
-
-    private async Task<TableData<BookDto>> TableReload(TableState state, CancellationToken token)
-    {
-        try
-        {
-            var booksData = await OpenLibraryService.GetBooksRange(
-            AppState.SearchResults.TermSearch, state.Page, state.PageSize);
-
-            var items = booksData.Items.Select(BookDto.FromBook);
-
-            if (_guardOldPageIndex != state.Page || !_guardOldSearch.Equals(AppState.SearchResults.TermSearch))
-            {
-                AppState.SearchResults.SetSearchResults(items.ToList());
-                _guardOldPageIndex = state.Page;
-                _guardOldSearch = AppState.SearchResults.TermSearch;
-            }
-
-            return new TableData<BookDto>()
-            {
-                TotalItems = booksData.TotalItems,
-                Items = items
-            };
-        }
-        catch (Exception)
-        {
-            return new TableData<BookDto>()
-            {
-                Items = AppState.SearchResults.Books,
-                TotalItems = AppState.SearchResults.Books.Count()
-            };
-        }        
-
-    }
-
-    private async void TriggerReload()
-    {
-        await InvokeAsync(async () =>
-        {
-            if (_table != null)
-            {
-                await _table.ReloadServerData();
-                StateHasChanged();
-            }
-        });
+        var userId = AppState.UserState.User.Id;
+        _favorites =
+            (await HttpRequest.Get<List<Favorite>>($"/favorite/inprogress/{userId}")).Content;
     }
 
 }

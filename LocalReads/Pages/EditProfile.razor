@@ -1,4 +1,4 @@
-@page "/profile"
+@page "/profile/edit"
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 @inject IHttpRequest HttpRequest
@@ -25,6 +25,7 @@
 @code {
 
     private User User = new User();
+    
     protected override async Task OnInitializedAsync()
     {
         var id = State.UserState.User.Id;

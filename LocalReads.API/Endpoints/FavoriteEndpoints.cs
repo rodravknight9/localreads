@@ -93,5 +93,25 @@ public static class FavoriteEndpoints
             await db.SaveChangesAsync();
             return Results.NoContent();
         });
+
+        app.MapPatch("/favorite", async (SaveProgress progress, LocalReadsContext db) =>
+        {
+            var fav = await db.Favorites
+                .AsNoTracking()
+                .SingleAsync(fav
+                    => fav.UserId == progress.UserId && fav.Id == progress.FavoriteId);
+
+            fav.Progress = progress.Progress;
+            db.Favorites.Update(fav);
+            db.SaveChanges();
+        });
+
+        app.MapGet("/favorite/inprogress/{userId}", (int userId, LocalReadsContext db) =>
+        {
+            return db.Favorites
+                .AsNoTracking()
+                .Include(fav => fav.Book)
+                .Where(fav => fav.UserId == userId && fav.State == (int)BookState.InProgress);
+        });
     }
 }

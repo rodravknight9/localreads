@@ -1,0 +1,62 @@
+@page "/profile/{id}"
+@inject IHttpRequest HttpRequest
+@inject AppState State
+
+<MudContainer Class="d-flex pt-5 pb-5" Style="background-color: white">
+    <MudElement Class="d-flex flex-column justify-content align-items"
+                Style="width: 30%">
+        <MudImage 
+            Src="staticfiles/userprofile.png" 
+            Width="250" 
+            Height="250" 
+            Alt="Swedish Farm House" 
+            Elevation="25" 
+            Class="rounded-lg ma-4"/>
+        <MudElement>
+            <MudText Typo="Typo.body2" Align="Align.Center">123 ratings | 5.0 average</MudText>
+        </MudElement>
+        @if (State.UserState.User.Id == User.Id)
+        {
+            <MudElement>
+                <MudLink Href="/profile/edit" Underline="Underline.Always">Edit Profile</MudLink>
+            </MudElement>  
+        }
+    </MudElement>
+    <MudElement Style="width: 60%">
+        <MudText Typo="Typo.h4">@GetUserName()</MudText>
+        <MudDivider/>
+        <MudElement>
+            <MudElement Class="d-flex">
+                <MudText Style="width: 200px; font-weight: bold">Location:</MudText>
+                <MudText>@User.Location</MudText>
+            </MudElement>
+            <MudElement Class="d-flex">
+                <MudText Style="width: 200px; font-weight: bold">Member Since:</MudText>
+                <MudText>@User.MemberSince.Date.ToString("MM/dd/yyyy")</MudText>
+            </MudElement>
+            <MudElement Class="d-flex flex-column pt-4">
+                <MudText Style="font-weight: bold">About me:</MudText>
+                <MudText>@User.PersonalIntroduction</MudText>
+            </MudElement>
+
+        </MudElement>
+    </MudElement>
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string id { get; set; }
+    private User User = new User();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        User = (await HttpRequest.Get<User>($"/user/{id}")).Content; //State.UserState.User;
+    }
+
+    private string GetUserName()
+    {
+        return string.IsNullOrEmpty(User.Name) 
+            ? User.UserName : $"{User.Name} ({User.UserName})";
+    }
+
+}
