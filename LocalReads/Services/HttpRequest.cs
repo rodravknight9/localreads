@@ -99,4 +99,32 @@ public class HttpRequest : HttpClient, IHttpRequest
         httpResult.Success = result.IsSuccessStatusCode; 
         return httpResult;
     }
+
+    public async Task<SimpleHttpResponse> SimplePut<T>(T entity, string path)
+    {
+        var httpResult = new SimpleHttpResponse();
+        using StringContent jsonContent = new(JsonSerializer.Serialize(entity), Encoding.UTF8, "application/json");
+
+        try
+        {
+            var result = await _httpClient.PutAsync(path, jsonContent);
+            var stringResult = await result.Content.ReadAsStringAsync();
+            httpResult.StatusCode = result.StatusCode;
+            httpResult.Success = (int)result.StatusCode >= 200 && (int)result.StatusCode < 300;
+
+            if (!httpResult.Success) 
+            {
+                httpResult.ErrorMessage = await result.Content.ReadAsStringAsync();
+            }
+
+            return httpResult;
+        }
+        catch (Exception e)
+        {
+            httpResult.Success = false;
+            httpResult.ErrorMessage = e.Message;
+            return httpResult;
+            throw;
+        }
+    }
 }

@@ -63,6 +63,13 @@ if (app.Environment.IsDevelopment())
     }
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<LocalReadsContext>();
+    db.Database.Migrate();
+}
+
+
 app.UseHttpsRedirection();
 app.Run();
 

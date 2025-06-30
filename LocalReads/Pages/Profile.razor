@@ -1,19 +1,51 @@
 @page "/profile"
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
-
+@inject IHttpRequest HttpRequest
 @inject AppState State
 
-<MudElement>
-    <MudText>@User.UserName</MudText>
-</MudElement>
+<MudContainer>
+    <MudItem xs="12" sm="7">
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h4">Register</MudText>
+            <MudForm Model="@User" Style="margin-bottom: 1rem">
+                <MudTextField T="string" Label="Username" @bind-Value="@User.UserName"/>
+                <MudTextField T="string" Label="Name" @bind-Value="@User.Name"/>
+                <MudDatePicker Date="@User.BirthDate" DateChanged="OnBirthdateChange" Label="Birthdate" />
+                <MudTextField T="string" Label="Location" @bind-Value="@User.Location"/>
+                <MudTextField T="string" Label="About Me" Lines="3" @bind-Value="@User.PersonalIntroduction"/>
+            </MudForm>
+            <MudElement>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="HandlUpdate">Save</MudButton>
+            </MudElement>
+        </MudPaper>
+    </MudItem>
+</MudContainer>
 
 @code {
 
-    private AuthResponse User = new AuthResponse();
-    protected override void OnInitialized()
+    private User User = new User();
+    protected override async Task OnInitializedAsync()
     {
-        User = State.UserState.User;
+        var id = State.UserState.User.Id;
+        User = (await HttpRequest.Get<User>($"/user/{id}")).Content; //State.UserState.User;
+    }
+
+    private async Task HandlUpdate()
+    {
+        var response = await HttpRequest.SimplePut(User, "/user");
+        if (response.Success)
+        {
+            var options = new DialogOptions { CloseOnEscapeKey = true };
+
+            //return DialogService.ShowAsync<GenericDialog>("Simple Dialog", options);
+        }
+    }
+
+    private void OnBirthdateChange(DateTime? newDate)
+    {
+        if(newDate != null)
+            User.BirthDate = (DateTime)newDate;
     }
 
 }

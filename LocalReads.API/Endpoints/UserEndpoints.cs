@@ -74,6 +74,22 @@ public static class UserEndpoints
             });
             return userResponse;
         });
+
+        app.MapGet("/user/{userId}", async (int userId, LocalReadsContext db) =>
+        {
+            var user = await db.Users.SingleAsync(u => u.Id == userId);
+            user.Password = String.Empty;
+            return user;
+        });
+
+        app.MapPut("/user", async (User user, LocalReadsContext db) =>
+        {
+            var existingUser = await db.Users.AsNoTracking().SingleAsync(u => u.Id == user.Id);
+            user.Password = existingUser.Password;
+            db.Users.Update(user);
+            await db.SaveChangesAsync();
+            return Results.NoContent();
+        });
     }
 
     private static string GenerateJwtToken(User user, JwtSettings jwtSettings)
