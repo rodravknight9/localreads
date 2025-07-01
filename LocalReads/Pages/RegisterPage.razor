@@ -1,10 +1,9 @@
 ﻿@page "/register"
 
-@inject IHttpRequest HttpRequest
 @inject NavigationManager Navigation
+@inject IHttpRequest HttpRequest
 @inject IAuthService AuthService
 @inject IDialogService DialogService
-
 
 <MudContainer>
     <MudItem xs="12" sm="7">
@@ -14,7 +13,6 @@
                 <MudTextField T="string" Label="Username" @bind-Value="@RegisterUser.UserName"/>
                 <MudTextField T="string" Label="Name" @bind-Value="@RegisterUser.Name"/>
                 <MudTextField T="string" Label="Password" @bind-Value="@RegisterUser.Password" InputType="InputType.Password"/>
-                <!--<MudTextField T="string" Label="Password" HelperText="Repeat the password" InputType="InputType.Password" />-->
             </MudForm>
             <MudElement>
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="HandleRegister">Register</MudButton>
