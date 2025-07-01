@@ -26,6 +26,8 @@ public static class UserEndpoints
             var newUser = new User
             {
                 UserName = request.UserName,
+                MemberSince = DateTime.Today,
+                Name = request.Name,
                 Password = password
             };
             await db.Users.AddAsync(newUser);

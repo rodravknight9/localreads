@@ -29,10 +29,10 @@
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; }
 
-    [Parameter] public string BookTitle { get; set; }
-    [Parameter] public double Rating { get; set; } = 0;
-
-
+    [Parameter] 
+    public string BookTitle { get; set; }
+    [Parameter] 
+    public double Rating { get; set; } = 0;
 
     private void Submit() => MudDialog.Close(DialogResult.Ok(Rating));
 
