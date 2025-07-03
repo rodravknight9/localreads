@@ -3,7 +3,7 @@
 @inject AppState AppState
 @inject IAuthService AuthService
 <MudContainer>
-    <MudElement Class="d-flex flex-column" Style="width: 40%">
+    <MudElement Class="d-flex flex-column" Style="width: 30%;">
         <MudText Typo="Typo.body1" Class="mb-4">Currently Reading</MudText>
         @foreach (var fav in _favorites)
         {
@@ -25,7 +25,9 @@
                     <MudButton 
                          Variant="Variant.Outlined" 
                          Size="Size.Small"
-                         Color="Color.Secondary">Update Progress</MudButton>
+                         Color="Color.Secondary"
+                         FullWidth="false"
+                         Style="width: 200px">Update Progress</MudButton>
                 </MudElement>
             </MudElement>
         }

@@ -4,7 +4,7 @@
 @inject IAuthService AuthService
 @inject AppState AppState
 
-<MudAppBar Style="padding: 10px 70px">
+<MudAppBar Style="padding: 0 70px; height: 70px;" Class="mb-1">
     <MudText Typo="Typo.h5">LocalReads</MudText>
     <AuthorizeView>
         <Authorized>
@@ -13,6 +13,9 @@
             </a>
             <a href="/mybooks" Class="custom-link d-flex justify-center align-center">
                 My Books
+            </a>
+            <a href="/searchbooks" Class="custom-link d-flex justify-center align-center">
+                Search
             </a>
             <a href="/myserver" Class="custom-link d-flex justify-center align-center">
                 My Server
@@ -39,8 +42,6 @@
 </MudAppBar>
 
 @code {
-    //[CascadingParameter]
-    //public AppState AppState { get; set; }
     
     private async Task HandleSearch(string term)
     {

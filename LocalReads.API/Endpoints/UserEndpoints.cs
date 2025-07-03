@@ -81,6 +81,9 @@ public static class UserEndpoints
         {
             var user = await db.Users.SingleAsync(u => u.Id == userId);
             user.Password = String.Empty;
+            var booksCount = db.Favorites.Count(fav => fav.User.Id == userId);
+            var averageRating = db.Favorites.Average(fav => fav.Rating);
+            
             return user;
         });
 

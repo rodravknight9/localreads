@@ -7,13 +7,13 @@
 <MudContainer>
     <MudItem xs="12" sm="7">
         <MudPaper Class="pa-4">
-            <MudText Typo="Typo.h4">Register</MudText>
+            <MudText Typo="Typo.h4">Edit Profile</MudText>
             <MudForm Model="@User" Style="margin-bottom: 1rem">
-                <MudTextField T="string" Label="Username" @bind-Value="@User.UserName"/>
-                <MudTextField T="string" Label="Name" @bind-Value="@User.Name"/>
-                <MudDatePicker Date="@User.BirthDate" DateChanged="OnBirthdateChange" Label="Birthdate" />
-                <MudTextField T="string" Label="Location" @bind-Value="@User.Location"/>
-                <MudTextField T="string" Label="About Me" Lines="3" @bind-Value="@User.PersonalIntroduction"/>
+                <MudTextField Class="mb-1" T="string" Label="Username" @bind-Value="@User.UserName"/>
+                <MudTextField Class="mb-1" T="string" Label="Name" @bind-Value="@User.Name"/>
+                <MudDatePicker Class="mb-1" Date="@User.BirthDate" DateChanged="OnBirthdateChange" Label="Birthdate" />
+                <MudTextField Class="mb-1" T="string" Label="Location" @bind-Value="@User.Location"/>
+                <MudTextField Class="mb-1" T="string" Label="About Me" Lines="3" @bind-Value="@User.PersonalIntroduction"/>
             </MudForm>
             <MudElement>
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="HandlUpdate">Save</MudButton>

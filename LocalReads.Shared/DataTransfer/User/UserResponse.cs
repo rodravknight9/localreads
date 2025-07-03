@@ -17,4 +17,6 @@ public class UserResponse
     public string Location { get; set; } = string.Empty;
     public int FavoriteBooksCount { get; set; } 
     public int CurrentlyReading { get; set; }
+    public int FavoritesCount { get; set; }
+    public int AverageRating { get; set; }
 }

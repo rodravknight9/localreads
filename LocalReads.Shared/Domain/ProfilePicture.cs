@@ -1,6 +1,6 @@
 ﻿namespace LocalReads.Shared.Domain;
 
-internal class ProfilePicture
+public class ProfilePicture
 {
     public int Id { get; set; }
     public byte[] Data { get; set; }

@@ -13,8 +13,9 @@ namespace LocalReads.API.Context
         public DbSet<Book> Books { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Favorite> Favorites { get; set; }
-        public DbSet<Star> Stars { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<ProfilePicture> Pictures { get; set; }
+        public DbSet<LogAction> LogActions { get; set; }
 
         public LocalReadsContext(DbContextOptions<LocalReadsContext> options)
             : base(options)
