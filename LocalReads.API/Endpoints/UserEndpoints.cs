@@ -3,6 +3,7 @@ using LocalReads.API.Context;
 using LocalReads.Shared.DataTransfer.User;
 using LocalReads.Shared.Domain;
 using LocalReads.Shared.Enums;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -48,7 +49,6 @@ public static class UserEndpoints
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 return Results.BadRequest("Wrong password");
 
-
             var response = new AuthResponse 
             {
                 UserName = user.UserName,
@@ -59,32 +59,31 @@ public static class UserEndpoints
             return Results.Created($"/users/{user.Id}", response);
         });
 
-        app.MapGet("/users", (LocalReadsContext db) =>
+        app.MapGet("/users", (LocalReadsContext db, IMapper mapper) =>
         {
             var users = db.Users.AsNoTracking().ToList();
-            var userResponse = users.Select(u => new UserResponse
+            var usersResponse = users.Select(u => 
             {
-                Id = u.Id,
-                BirthDate = u.BirthDate,
-                Name = u.Name,
-                Location = u.Location,
-                MemberSince = u.MemberSince,
-                PersonalIntroduction = u.PersonalIntroduction,
-                UserName = u.UserName,
-                CurrentlyReading = db.Favorites.Count(fav => fav.User.Id == u.Id && fav.State == (int)BookState.InProgress),
-                FavoriteBooksCount = db.Favorites.Count(fav => fav.User.Id == u.Id)
+                var mappedUser = mapper.Map<UserResponse>(u);
+                mappedUser.CurrentlyReading = 
+                    db.Favorites.Count(fav => fav.User.Id == u.Id && fav.State == (int)BookState.InProgress);
+                mappedUser.FavoriteBooksCount = db.Favorites.Count(fav => fav.User.Id == u.Id);
+                return mappedUser;
             });
-            return userResponse;
+            return usersResponse;
         });
 
-        app.MapGet("/user/{userId}", async (int userId, LocalReadsContext db) =>
+        app.MapGet("/user/{userId}", async (int userId, LocalReadsContext db, IMapper mapper) =>
         {
             var user = await db.Users.SingleAsync(u => u.Id == userId);
-            user.Password = String.Empty;
-            var booksCount = db.Favorites.Count(fav => fav.User.Id == userId);
-            var averageRating = db.Favorites.Average(fav => fav.Rating);
-            
-            return user;
+
+            var userResponse = mapper.Map<UserResponse>(user);
+            userResponse.FavoriteBooksCount = 
+                db.Favorites.Count(fav => fav.User.Id == userId && fav.Rating > 0);
+            userResponse.AverageRating = 
+                db.Favorites.Where(fav => fav.User.Id == userId && fav.Rating > 0).Average(fav => fav.Rating);
+
+            return userResponse;
         });
 
         app.MapPut("/user", async (User user, LocalReadsContext db) =>
@@ -109,7 +108,6 @@ public static class UserEndpoints
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             }),
-            //Expires = DateTime.UtcNow.AddHours(1),
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key),
                 SecurityAlgorithms.HmacSha256Signature),

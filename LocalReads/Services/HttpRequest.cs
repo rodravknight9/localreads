@@ -79,12 +79,10 @@ public class HttpRequest : HttpClient, IHttpRequest
             var options = new JsonSerializerOptions{ PropertyNameCaseInsensitive = true };
             var result = await _httpClient.GetAsync(path);
             var stringResult = await result.Content.ReadAsStringAsync();
-            if (stringResult.Contains("'"))
-                stringResult = stringResult.Replace("'", string.Empty);
             httpResult.Content = JsonSerializer.Deserialize<T>(stringResult, options)!;
             return httpResult;
         }
-        catch (Exception)
+        catch (Exception e)
         {
 
             throw;

@@ -1,5 +1,7 @@
+@using LocalReads.Shared.DataTransfer.GoogleBooks
 
-@inject IOpenLibraryService GoogleBooksService
+@inject HttpClient HttpClient
+@inject IHttpRequest HttpRequest
 @inject AppState AppState
 @inject NavigationManager Navigation
 
@@ -20,12 +22,11 @@
 
     private async Task OnSearchClicked()
     {
-        var books = 
-            (await GoogleBooksService.GetBySearch(SearchTerm))
-            .Select(BookDto.FromBook);
-        AppState.SearchResults.SetSearchResults(books.ToList());
+        // var books = (await HttpRequest.Get<List<GoogleBook>>($"/googlebooks/search/{SearchTerm}"))
+        //     .Content.Select(BookDto.FromBook);
+        // AppState.SearchResults.SetSearchResults(books.ToList());
         AppState.SearchResults.TermSearch = SearchTerm;
-        Navigation.NavigateTo("/");
+        //Navigation.NavigateTo("/searchbooks");
         if (OnSearch.HasDelegate)
         {
             await OnSearch.InvokeAsync(SearchTerm);

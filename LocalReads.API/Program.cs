@@ -1,10 +1,14 @@
 using LocalReads.API.Configurations;
 using LocalReads.API.Context;
 using LocalReads.API.Endpoints;
+using LocalReads.API.Services;
+using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Text;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +16,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors();
 
+builder.Services.AddScoped<IGoogleService, GoogleService>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+builder.Services.AddMapster();
+TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
 
 //builder.Services.AddOpenApi();
 builder.Services.AddDbContext<LocalReadsContext>(options =>
@@ -48,6 +55,7 @@ app.UseCors(x =>
 
 app.MapUserEndpoints();
 app.MapFavoriteEndpoints();
+app.MapGoogleBooksEndpoints();
 
 
 // Configure the HTTP request pipeline.

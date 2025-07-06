@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LocalReads.Shared.DataTransfer.User;
+﻿namespace LocalReads.Shared.DataTransfer.User;
 
 public class UserResponse
 {
@@ -18,5 +12,5 @@ public class UserResponse
     public int FavoriteBooksCount { get; set; } 
     public int CurrentlyReading { get; set; }
     public int FavoritesCount { get; set; }
-    public int AverageRating { get; set; }
+    public double AverageRating { get; set; }
 }

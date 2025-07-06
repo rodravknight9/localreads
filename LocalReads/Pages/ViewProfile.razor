@@ -13,7 +13,7 @@
             Elevation="25" 
             Class="rounded-lg ma-4"/>
         <MudElement>
-            <MudText Typo="Typo.body2" Align="Align.Center">123 ratings | 5.0 average</MudText>
+            <MudText Typo="Typo.body2" Align="Align.Center">@User.FavoriteBooksCount ratings | @User.AverageRating average</MudText>
         </MudElement>
         @if (State.UserState.User.Id == User.Id)
         {
@@ -46,11 +46,11 @@
 @code {
     [Parameter]
     public string id { get; set; }
-    private User User = new User();
+    private UserResponse User = new();
     
     protected override async Task OnInitializedAsync()
     {
-        User = (await HttpRequest.Get<User>($"/user/{id}")).Content; //State.UserState.User;
+        User = (await HttpRequest.Get<UserResponse>($"/user/{id}")).Content; //State.UserState.User;
     }
 
     private string GetUserName()

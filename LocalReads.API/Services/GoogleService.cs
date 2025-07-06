@@ -1,17 +1,15 @@
-﻿using System.Text.Json;
-using LocalReads.Models;
-using LocalReads.State;
+﻿using LocalReads.Shared.DataTransfer.GoogleBooks;
+using System.Text.Json;
 
-namespace LocalReads.Services;
+namespace LocalReads.API.Services;
 
-public class OpenLibraryService : IOpenLibraryService
+public class GoogleService : IGoogleService
 {
     private readonly HttpClient _httpClient;
     private readonly string[] _randomTerms;
-    private readonly AppState _appState;
-    public OpenLibraryService(AppState appState)
+    public GoogleService()
     {
-        _httpClient = new HttpClient() 
+        _httpClient = new HttpClient()
         {
             BaseAddress = new Uri("https://www.googleapis.com/books/v1/volumes")
         };
@@ -21,26 +19,22 @@ public class OpenLibraryService : IOpenLibraryService
             "Harry Potter", "Libro de la Selva", "Maestro y Margarita",
             "George Orwell"
         ];
-        _appState = appState;
     }
-    public async Task<IEnumerable<Book>> GetRandomBooks()
+    public async Task<IEnumerable<GoogleBook>> GetRandomBooks()
     {
         Random rnd = new Random();
-        var randomSearch = rnd.Next(rnd.Next(_randomTerms.Length));
-        _appState.SearchResults.TermSearch = _randomTerms[randomSearch];
+        var randomSearch = rnd.Next(_randomTerms.Length);
         var rawResponse = await _httpClient.GetStringAsync($"?q={_randomTerms[randomSearch]}");
         var root = JsonSerializer.Deserialize<Root>(rawResponse);
         return root!.Items;
     }
-
-    public async Task<IEnumerable<Book>> GetBySearch(string search)
+    public async Task<IEnumerable<GoogleBook>> GetBySearch(string search)
     {
         var rawResponse = await _httpClient.GetStringAsync($"?q={search}");
         var root = JsonSerializer.Deserialize<Root>(rawResponse);
         return root!.Items;
     }
-
-    public async Task<Root> GetBooksRange(string search, int index, int limit) 
+    public async Task<Root> GetBooksRange(string search, int index, int limit)
     {
         var rawResponse = await _httpClient.GetStringAsync($"?q={search}&startIndex={index}&maxResults={limit}");
         var root = JsonSerializer.Deserialize<Root>(rawResponse);

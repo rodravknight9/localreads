@@ -1,6 +1,4 @@
-﻿
-@inject IOpenLibraryService GoogleBooksService
-@inject NavigationManager Navigation
+﻿@inject NavigationManager Navigation
 @inject IAuthService AuthService
 @inject AppState AppState
 
@@ -42,11 +40,10 @@
 </MudAppBar>
 
 @code {
-    
-    private async Task HandleSearch(string term)
+
+    private void HandleSearch(string term)
     {
-        var test = await GoogleBooksService.GetBySearch(term);
-        Console.WriteLine($"Search for: {term}");
+        AppState.SearchResults.TermSearch = term;
     }
 
     private void HandleClick()

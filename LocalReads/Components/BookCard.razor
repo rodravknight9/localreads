@@ -17,8 +17,8 @@
                 Label="More"
                 >
                 <MudMenuItem @onclick="AddToFavorites">Add to the Wishlist</MudMenuItem>
-                <MudMenuItem @onclick="MarkInProgress">Mark as In Progress</MudMenuItem>
-                <MudMenuItem @onclick="MarkInProgress">Add as Read</MudMenuItem>
+                <MudMenuItem @onclick="AddToFavorites">Mark as In Progress</MudMenuItem>
+                <MudMenuItem @onclick="AddToFavorites">Add as Read</MudMenuItem>
             </MudMenu>
         </MudCardActions>
     </MudCardContent>
@@ -40,7 +40,7 @@
 
         await AuthService.PersistLoggedInUser();
 
-        if (!result.Canceled)
+        if (result != null && !result.Canceled)
         {
             var book = new Book
             {
@@ -64,10 +64,5 @@
 
             await HttpRequest.SimplePost(favoriteBook, "/favorite");
         }
-    }
-
-    void MarkInProgress()
-    {
-        //Snackbar.Add($"{Book.Title} marked as in progress", Severity.Info);
     }
 }

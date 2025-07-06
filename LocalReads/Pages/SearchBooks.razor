@@ -1,6 +1,6 @@
 ﻿@page "/searchbooks"
 @using System.Text.RegularExpressions
-@inject IOpenLibraryService OpenLibraryService
+@using LocalReads.Shared.DataTransfer.GoogleBooks
 @inject IDialogService DialogService
 @inject IAuthService AuthService
 @inject IHttpRequest HttpRequest
@@ -67,10 +67,10 @@
 
         if (string.IsNullOrEmpty(AppState.SearchResults.TermSearch))
         {
-            var books = (await OpenLibraryService.GetRandomBooks())
-                .Select(BookDto.FromBook);
+            var books = (await HttpRequest.Get<List<GoogleBook>>("/googlebooks/random"))
+                .Content.Select(BookDto.FromBook);
             AppState.SearchResults.SetSearchResults(books.ToList());
-            _guardOldSearch = AppState.SearchResults.TermSearch;
+            //_guardOldSearch = AppState.SearchResults.TermSearch;
         }
 
         // move the Trigger reload after the default data is filled up to avoid an infinte loop
@@ -124,12 +124,12 @@
     {
         try
         {
-            var booksData = await OpenLibraryService.GetBooksRange(
-            AppState.SearchResults.TermSearch, state.Page, state.PageSize);
+            var booksData = (await HttpRequest.Get<Root>($"/googlebooks/range/{AppState.SearchResults.TermSearch}/{state.Page}/{state.PageSize}"))
+                .Content;
 
             var items = booksData.Items.Select(BookDto.FromBook);
 
-            if (_guardOldPageIndex != state.Page || !_guardOldSearch.Equals(AppState.SearchResults.TermSearch))
+            if (_guardOldPageIndex != state.Page && !_guardOldSearch.Equals(AppState.SearchResults.TermSearch))
             {
                 AppState.SearchResults.SetSearchResults(items.ToList());
                 _guardOldPageIndex = state.Page;
@@ -142,7 +142,7 @@
                 Items = items
             };
         }
-        catch (Exception)
+        catch (Exception e)
         {
             return new TableData<BookDto>()
             {

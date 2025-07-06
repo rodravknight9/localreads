@@ -1,4 +1,5 @@
 using LocalReads.Models;
+using LocalReads.Shared.DataTransfer.GoogleBooks;
 
 namespace LocalReads.DTO;
 
@@ -16,7 +17,7 @@ public class BookDto
     public string Language { get; set; }
 
     //TODO: too much ambiguity in Books classes
-    public static BookDto FromBook(LocalReads.Models.Book book)
+    public static BookDto FromBook(GoogleBook book)
     {
         return new BookDto()
         {
