@@ -2,12 +2,15 @@
 @inject IHttpRequest HttpRequest
 @inject AppState AppState
 @inject IAuthService AuthService
+@inject IDialogService DialogService
+
+
 <MudContainer>
     <MudElement Class="d-flex flex-column" Style="width: 30%;">
         <MudText Typo="Typo.body1" Class="mb-4">Currently Reading</MudText>
         @foreach (var fav in _favorites)
         {
-            <MudElement Class="d-flex">
+            <MudElement Class="d-flex mb-2">
                 <MudImage Src="@fav.Book.ImageLink" Width="90" Height="130" Class="mr-2"/>
                 <MudElement Class="d-flex flex-column">
                     <MudLink 
@@ -27,6 +30,7 @@
                          Size="Size.Small"
                          Color="Color.Secondary"
                          FullWidth="false"
+                         @onclick="@(e => UpdateProgress(@fav))"
                          Style="width: 200px">Update Progress</MudButton>
                 </MudElement>
             </MudElement>
@@ -43,6 +47,40 @@
         var userId = AppState.UserState.User.Id;
         _favorites =
             (await HttpRequest.Get<List<Favorite>>($"/favorite/inprogress/{userId}")).Content;
+    }
+
+    private async Task UpdateProgress(Favorite favorite)
+    {
+        var createFav = new CreateFavorite();
+        createFav.Progress = favorite.Progress;
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var paramsDialog = new DialogParameters
+        {
+            { "BookTitle", favorite.Book.Title },
+            { "ListType", BookState.InProgress.ToString() },
+            { "Favorite", createFav }
+        };
+
+        var dialog = await DialogService.ShowAsync<AddToListDialog>("", paramsDialog, options);
+        var result = await dialog.Result;
+        if (result != null && result.Canceled)
+        {
+            return;
+        }
+
+        var dialogData = (CreateFavorite)result!.Data!;
+        await AuthService.PersistLoggedInUser();
+
+        var saveProgress = new SaveProgress
+        {
+            FavoriteId = favorite.Id,
+            UserId = AppState.UserState.User.Id,
+            Progress = dialogData.Progress
+        };
+        await HttpRequest.SimplePatch(saveProgress, "/favorite");
+        var favToUpdateUi = _favorites.First(fav => fav.Id == favorite.Id);
+        favToUpdateUi.Progress = dialogData.Progress;
+
     }
 
 }

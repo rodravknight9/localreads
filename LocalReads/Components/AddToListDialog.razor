@@ -38,8 +38,8 @@
     public string BookTitle { get; set; } = "";
     [Parameter]
     public string ListType { get; set; } = "";
-
-    private CreateFavorite Favorite { get; set; } = new CreateFavorite();
+    [Parameter]
+    public CreateFavorite Favorite { get; set; } = new CreateFavorite();
 
     protected override void OnInitialized()
     {

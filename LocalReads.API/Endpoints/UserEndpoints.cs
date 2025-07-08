@@ -80,9 +80,11 @@ public static class UserEndpoints
             var userResponse = mapper.Map<UserResponse>(user);
             userResponse.FavoriteBooksCount = 
                 db.Favorites.Count(fav => fav.User.Id == userId && fav.Rating > 0);
-            userResponse.AverageRating = 
-                db.Favorites.Where(fav => fav.User.Id == userId && fav.Rating > 0).Average(fav => fav.Rating);
-
+            if (userResponse.FavoriteBooksCount > 0)
+            { 
+                userResponse.AverageRating = 
+                    db.Favorites.Where(fav => fav.User.Id == userId && fav.Rating > 0).Average(fav => fav.Rating);
+            }
             return userResponse;
         });
 

@@ -82,9 +82,8 @@ public class HttpRequest : HttpClient, IHttpRequest
             httpResult.Content = JsonSerializer.Deserialize<T>(stringResult, options)!;
             return httpResult;
         }
-        catch (Exception e)
+        catch (Exception)
         {
-
             throw;
         }
     }
@@ -111,6 +110,34 @@ public class HttpRequest : HttpClient, IHttpRequest
             httpResult.Success = (int)result.StatusCode >= 200 && (int)result.StatusCode < 300;
 
             if (!httpResult.Success) 
+            {
+                httpResult.ErrorMessage = await result.Content.ReadAsStringAsync();
+            }
+
+            return httpResult;
+        }
+        catch (Exception e)
+        {
+            httpResult.Success = false;
+            httpResult.ErrorMessage = e.Message;
+            return httpResult;
+            throw;
+        }
+    }
+
+    public async Task<SimpleHttpResponse> SimplePatch<T>(T entity, string path)
+    {
+        var httpResult = new SimpleHttpResponse();
+        using StringContent jsonContent = new(JsonSerializer.Serialize(entity), Encoding.UTF8, "application/json");
+
+        try
+        {
+            var result = await _httpClient.PatchAsync(path, jsonContent);
+            var stringResult = await result.Content.ReadAsStringAsync();
+            httpResult.StatusCode = result.StatusCode;
+            httpResult.Success = (int)result.StatusCode >= 200 && (int)result.StatusCode < 300;
+
+            if (!httpResult.Success)
             {
                 httpResult.ErrorMessage = await result.Content.ReadAsStringAsync();
             }

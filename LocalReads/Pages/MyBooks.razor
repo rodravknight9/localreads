@@ -63,11 +63,19 @@
                     <MudText Typo="Typo.body2">@context.Rating</MudText>
                 </MudElement>
             </MudTd>
-            <MudTd DataLabel="Nr">3.5</MudTd>
+            <MudTd DataLabel="Nr">
+                <MudElement Class="d-flex align-center">
+                    <MudIcon 
+                        Class="cursor-pointer"
+                        Icon="@Icons.Material.Filled.Star"
+                        Color="Color.Warning" Title="Favorite"/>
+                    <MudText Typo="Typo.body2">@context.AverageRating</MudText>
+                </MudElement>
+            </MudTd>
 
             @if (_listType.Equals(BookState.InProgress.ToString()))
             {
-                <MudTd DataLabel="Nr">
+                <MudTd DataLabel="Nr" @onclick="@(e => UpdateProgress(@context))" Class="cursor-pointer">
                     <MudText>@context.Progress %</MudText>
                     <MudProgressLinear Color="Color.Primary" Size="Size.Small" Value="@context.Progress" />
                 </MudTd>
@@ -95,15 +103,16 @@
 
 
 @code {
-    private List<Favorite> _favorites { get; set; } = new List<Favorite>();
+    private List<GetFavorite> _favorites { get; set; } = new List<GetFavorite>();
     private string _listType = BookState.WantToRead.ToString();
-    private MudTable<Favorite> _favTable;
+    private MudTable<GetFavorite> _favTable;
+
     protected override async Task OnInitializedAsync()
     {
         //TODO: Get rid of this, need to be persisiting with the User State
         await AuthService.PersistLoggedInUser();
         var userId = AppState.UserState.User.Id;
-        _favorites = (await HttpRequest.Get<List<Favorite>>($"/favorites/{userId}?type={_listType}")).Content;
+        _favorites = (await HttpRequest.Get<List<GetFavorite>>($"/favorites/{userId}?type={_listType}")).Content;
     }
 
     private async Task RateBook(Favorite favorite)
@@ -143,13 +152,13 @@
         return "--";
     }
 
-    private async Task DeleteFavorite(Favorite favorite)
+    private async Task DeleteFavorite(GetFavorite favorite)
     {
         var options = new DialogOptions { CloseOnEscapeKey = true };
         var paramsDialog = new DialogParameters
         {
             { "Title", "Delete from list"},
-            { "Message", $@"Do you want to delete ""{favorite.Book.Title}""" },
+            { "Message", $@"Are you sure you want to delete ""{favorite.Book.Title}""" },
             { "AfirmativeText", "Yes"},
             { "NegativeText", "No"},
             { "HasCancelEvent", true }
@@ -171,8 +180,42 @@
             _listType = listType;
             await AuthService.PersistLoggedInUser();
             var userId = AppState.UserState.User.Id;
-            _favorites = (await HttpRequest.Get<List<Favorite>>($"/favorites/{userId}?type={listType}")).Content;
+            _favorites = (await HttpRequest.Get<List<GetFavorite>>($"/favorites/{userId}?type={listType}")).Content;
             await _favTable.ReloadServerData();       
         }
+    }
+
+    private async Task UpdateProgress(Favorite favorite)
+    {
+        var createFav = new CreateFavorite();
+        createFav.Progress = favorite.Progress;
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var paramsDialog = new DialogParameters
+        {
+            { "BookTitle", favorite.Book.Title },
+            { "ListType", BookState.InProgress.ToString() },
+            { "Favorite", createFav }
+        };
+
+        var dialog = await DialogService.ShowAsync<AddToListDialog>("", paramsDialog, options);
+        var result = await dialog.Result;
+        if (result != null && result.Canceled)
+        {
+            return;
+        }
+
+        var dialogData = (CreateFavorite)result!.Data!;
+        await AuthService.PersistLoggedInUser();
+
+        var saveProgress = new SaveProgress
+        {
+            FavoriteId = favorite.Id,
+            UserId = AppState.UserState.User.Id,
+            Progress = dialogData.Progress
+        };
+        await HttpRequest.SimplePatch(saveProgress, "/favorite");
+        var favToUpdateUi = _favorites.First(fav => fav.Id == favorite.Id);
+        favToUpdateUi.Progress = dialogData.Progress;
+
     }
 }

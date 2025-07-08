@@ -13,4 +13,5 @@ public interface IHttpRequest
 
     Task<SimpleHttpResponse> Delete(string path);
     Task<SimpleHttpResponse> SimplePut<T>(T entity, string path);
+    Task<SimpleHttpResponse> SimplePatch<T>(T entity, string path);
 }

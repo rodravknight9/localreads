@@ -3,6 +3,7 @@ using LocalReads.Shared.DataTransfer.Books;
 using LocalReads.Shared.DataTransfer.Favorites;
 using LocalReads.Shared.Domain;
 using LocalReads.Shared.Enums;
+using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,7 +58,7 @@ public static class FavoriteEndpoints
             return Results.Created();
         });
 
-        app.MapGet("/favorites/{userId}", async ([FromQuery] string type, [FromRoute] int userId, LocalReadsContext db) =>
+        app.MapGet("/favorites/{userId}", async ([FromQuery] string type, [FromRoute] int userId, LocalReadsContext db, IMapper mapper) =>
         {
             var filterType = type switch
             {
@@ -68,10 +69,23 @@ public static class FavoriteEndpoints
                 _ => 0
             };
 
-            return db.Favorites
+            var favorites = db.Favorites
                 .AsNoTracking()
                 .Include(fav => fav.Book)
                 .Where(fav => fav.State == filterType && fav.UserId == userId);
+
+            var favsInServer = db.Favorites
+                .AsNoTracking()
+                .Where(favInSrvr => favorites.Any(fav => fav.BookId.Equals(favInSrvr.BookId)));
+
+            var favsToRespond = mapper.Map<IEnumerable<GetFavorite>>(favorites).ToList();
+
+            foreach (var fav in favsToRespond)
+            {
+                fav.AverageRating = favsInServer.Where(favsIn => favsIn.BookId == fav.BookId).Average(favsIn => favsIn.Rating);
+            }
+
+            return favsToRespond;
         });
 
         app.MapPost("/favorite/rate", async (RateBook bookRate, LocalReadsContext db) =>
