@@ -3,6 +3,7 @@
 @inject IDialogService DialogService
 @inject IHttpRequest HttpRequest
 @inject IAuthService AuthService
+@inject NavigationManager Navigation
 @inject AppState AppState
 
 <MudElement Class="d-flex flex-row">
@@ -50,7 +51,7 @@
         </HeaderContent>
         <RowTemplate>
             <MudTd><MudImage Src="@context.Book.ImageLink" Width="40" /></MudTd>
-            <MudTd DataLabel="Nr">@context.Book.Title</MudTd>
+            <MudTd DataLabel="Nr"><MudLink @onclick="@(e => GoToBook(@context.Book.BookGoogleId))">@context.Book.Title</MudLink></MudTd>
             <MudTd DataLabel="Nr">@context.Book.Authors</MudTd>
             <MudTd DataLabel="Nr">
                 <MudElement Class="d-flex align-center">
@@ -217,5 +218,10 @@
         var favToUpdateUi = _favorites.First(fav => fav.Id == favorite.Id);
         favToUpdateUi.Progress = dialogData.Progress;
 
+    }
+
+    private void GoToBook(string googleBookId)
+    {
+        Navigation.NavigateTo($"/viewbook/{googleBookId}");
     }
 }

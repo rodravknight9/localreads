@@ -1,4 +1,3 @@
-using LocalReads.Models;
 using LocalReads.Shared.DataTransfer.GoogleBooks;
 
 namespace LocalReads.DTO;
@@ -15,6 +14,7 @@ public class BookDto
     public string Categories { get; set; }
     public string ImageLink { get; set; }
     public string Language { get; set; }
+    public string LargestImageLink { get; set; }
 
     //TODO: too much ambiguity in Books classes
     public static BookDto FromBook(GoogleBook book)
@@ -30,7 +30,8 @@ public class BookDto
             Categories = book.VolumeInfo.Categories?.Aggregate((a, b) => $"{a}, {b}") ?? "",
             ImageLink = GetImageUrl(book.VolumeInfo.ImageLinks),
             Language = book.VolumeInfo?.Language ?? "",
-            BookGoogleId = book.Id
+            BookGoogleId = book.Id,
+            LargestImageLink = GetLargestImageUrl(book.VolumeInfo.ImageLinks)
         };
     }
 
@@ -47,7 +48,8 @@ public class BookDto
             PageCount = book.PageCount,
             PublishedDate = book.PublishedDate,
             Publisher = book.Publisher,
-            Title = book.Title
+            Title = book.Title,
+            LargestImageLink = book.LargestImageLink
         };
     }
 
@@ -69,6 +71,29 @@ public class BookDto
             return imageLinks.Thumbnail;
         }
         
+        return String.Empty;
+    }
+
+    private static string GetLargestImageUrl(ImageLinks imageLinks)
+    {
+        if (imageLinks is null)
+            return string.Empty;
+        if (imageLinks.Large is not null)
+        {
+            return imageLinks.Large;
+        }
+        else if (imageLinks.Medium is not null)
+        {
+            return imageLinks.Medium;
+        }
+        else if (imageLinks.Small is not null)
+        {
+            return imageLinks.Small;
+        }
+        else if (imageLinks.Thumbnail is not null)
+        {
+            return imageLinks.Thumbnail;
+        }
         return String.Empty;
     }
 }

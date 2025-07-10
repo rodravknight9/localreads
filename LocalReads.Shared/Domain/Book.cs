@@ -13,4 +13,5 @@ public class Book
     public string? Categories { get; set; } = string.Empty;
     public string? ImageLink { get; set; } = string.Empty;
     public string? Language { get; set; } = string.Empty;
+    public string? LargestImageLink { get; set; } = string.Empty;
 }

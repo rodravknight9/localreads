@@ -1,5 +1,102 @@
-<h3>ViewBook</h3>
+@page "/viewbook/{googleBookId}"
+@inject IHttpRequest HttpRequest
+@inject AppState State
+@inject NavigationManager Navigation
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mx-auto">
+    @if (isLoading)
+    {
+        <MudProgressCircular Indeterminate="true" Size="Size.Medium" Class="mx-auto my-8" />
+    }
+    else
+    {
+        <MudPaper Class="pa-8">
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="GoBack" Class="mb-6">Back</MudButton>
+            <MudGrid>
+                <MudItem xs="12" sm="4" Class="d-flex flex-column align-items-center mb-4">
+                    <MudImage Src="@ServerBook.Book.LargestImageLink"
+                              Width="220"
+                              Height="350"
+                              Alt="@ServerBook.Book.Title"
+                              Elevation="25"
+                              Class="rounded-lg mb-4" />
+                    @if (ServerBook.IsFavorite)
+                    {
+                        <MudChip Color="Color.Success" StartIcon="@Icons.Material.Filled.Star" T="string" Class="mb-3">Favorite</MudChip>
+                        <MudLink Class="mb-3" Href="#">Edit My Activity</MudLink>
+                    }
+                </MudItem>
+                <MudItem xs="12" sm="8">
+                    <MudText Typo="Typo.h4" GutterBottom="true" Class="mb-4">@ServerBook.Book.Title</MudText>
+                    <MudDivider Class="mb-4" />
+                    @if (ServerBook.IsFavorite)
+                    {
+                        <MudStack Direction="Row" Spacing="3" Class="mb-4">
+                            <MudTooltip Text="Average rating from all users">
+                                <MudText Style="font-weight: bold">
+                                    <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" /> @ServerBook.AverageRating
+                                </MudText>
+                            </MudTooltip>
+                            <MudTooltip Text="Total number of ratings">
+                                <MudText Style="font-weight: bold">
+                                    <MudIcon Icon="@Icons.Material.Filled.People" /> @ServerBook.RatingsCount ratings
+                                </MudText>
+                            </MudTooltip>
+                        </MudStack>
+                    }
+                    <MudText Style="font-weight: bold" Class="mt-4 mb-2">Authors:</MudText>
+                    @if (!string.IsNullOrWhiteSpace(ServerBook.Book.Authors))
+                    {
+                        <MudList Dense="true" T="string" Class="mb-4">
+                            @foreach (var author in ServerBook.Book.Authors.Split(','))
+                            {
+                                <MudListItem>@author.Trim()</MudListItem>
+                            }
+                        </MudList>
+                    }
+                    <MudText Style="font-weight: bold" Class="mt-4 mb-2">Description:</MudText>
+                    <MudText Class="mb-4">@ServerBook.Book.Description</MudText>
+                    <MudText Style="font-weight: bold" Class="mt-4 mb-2">Categories:</MudText>
+                    @if (!string.IsNullOrWhiteSpace(ServerBook.Book.Categories))
+                    {
+                        <MudList Dense="true" T="string" Class="mb-4">
+                            @foreach (var category in ServerBook.Book.Categories.Split(','))
+                            {
+                                <MudListItem>@category.Trim()</MudListItem>
+                            }
+                        </MudList>
+                    }
+                    <MudStack Direction="Row" Spacing="3" Class="mt-6">
+                        <MudText Typo="Typo.body2">@ServerBook.Book.PageCount pages</MudText>
+                        <MudText Typo="Typo.body2">Published: @ServerBook.Book.PublishedDate</MudText>
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    }
+</MudContainer>
 
 @code {
-    
+    [Parameter]
+    public string googleBookId { get; set; }
+    private ServerBook ServerBook { get; set; }
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            ServerBook = (await HttpRequest.Get<ServerBook>($"/googlebooks/book/{googleBookId}")).Content;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/");
+    }
 }

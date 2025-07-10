@@ -40,4 +40,12 @@ public class GoogleService : IGoogleService
         var root = JsonSerializer.Deserialize<Root>(rawResponse);
         return root!;
     }
+
+    public async Task<GoogleBook> GetBookByCode(string bookCode)
+    {
+        using var client = new HttpClient();
+        var rawResponse = await client.GetStringAsync("https://www.googleapis.com/books/v1/volumes/s1gVAAAAYAAJ");
+        var book = JsonSerializer.Deserialize<GoogleBook>(rawResponse);
+        return book!;
+    }
 }
