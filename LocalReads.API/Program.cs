@@ -1,6 +1,7 @@
 using LocalReads.API.Configurations;
 using LocalReads.API.Context;
 using LocalReads.API.Endpoints;
+using LocalReads.API.Middlewares;
 using LocalReads.API.Services;
 using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors();
+builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<IGoogleService, GoogleService>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
@@ -76,8 +78,11 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<LocalReadsContext>();
     db.Database.Migrate();
 }
+app.UseMiddleware<UserMiddleware>();
 
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.Run();
 

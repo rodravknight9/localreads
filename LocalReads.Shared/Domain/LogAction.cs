@@ -7,4 +7,5 @@ public class LogAction
     public string Table  { get; set; }
     public string RecordId { get; set; }
     public DateTime ActionTime { get; set; }
+    public int UserId { get; set; }
 }

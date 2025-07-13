@@ -6,6 +6,7 @@ using LocalReads.Shared.Enums;
 using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace LocalReads.API.Endpoints;
 
@@ -56,9 +57,9 @@ public static class FavoriteEndpoints
             db.SaveChanges();
 
             return Results.Created();
-        });
+        }).RequireAuthorization();
 
-        app.MapGet("/favorites/{userId}", async ([FromQuery] string type, [FromRoute] int userId, LocalReadsContext db, IMapper mapper) =>
+        app.MapGet("/favorites/{userId}", async ([FromQuery] string type, [FromRoute] int userId, LocalReadsContext db, HttpContext context, IMapper mapper) =>
         {
             var filterType = type switch
             {
@@ -68,6 +69,8 @@ public static class FavoriteEndpoints
                 nameof(BookState.WantToRead) => (int)BookState.WantToRead,
                 _ => 0
             };
+
+            var user = context.Items["UserId"];
 
             var favorites = db.Favorites
                 .AsNoTracking()
@@ -86,9 +89,9 @@ public static class FavoriteEndpoints
             }
 
             return favsToRespond;
-        });
+        }).RequireAuthorization();
 
-        app.MapPost("/favorite/rate", async (RateBook bookRate, LocalReadsContext db) =>
+        app.MapPost("/favorite/rate", async (RateBook bookRate, LocalReadsContext db, HttpContext context) =>
         {
             var favorite = await db.Favorites.SingleAsync(fav => fav.UserId == bookRate.UserId && fav.Id == bookRate.FavoriteId);
             if (favorite != null)
@@ -97,8 +100,11 @@ public static class FavoriteEndpoints
                 db.SaveChanges();
             }
 
+            //int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var user = context.Items["User"];
+
             return Results.Ok();
-        });
+        }).RequireAuthorization();
 
         app.MapDelete("/favorite/{favoriteId}", async (int favoriteId, LocalReadsContext db) =>
         {
@@ -106,7 +112,7 @@ public static class FavoriteEndpoints
             db.Favorites.Remove(fav);
             await db.SaveChangesAsync();
             return Results.NoContent();
-        });
+        }).RequireAuthorization();
 
         app.MapPatch("/favorite", async (SaveProgress progress, LocalReadsContext db) =>
         {
@@ -118,14 +124,16 @@ public static class FavoriteEndpoints
             fav.Progress = progress.Progress;
             db.Favorites.Update(fav);
             db.SaveChanges();
-        });
+        }).RequireAuthorization();
 
-        app.MapGet("/favorite/inprogress/{userId}", (int userId, LocalReadsContext db) =>
+        app.MapGet("/favorite/inprogress/{userId}", (int userId, LocalReadsContext db, HttpContext context) =>
         {
+            var user = context.Items["UserId"];
+
             return db.Favorites
                 .AsNoTracking()
                 .Include(fav => fav.Book)
                 .Where(fav => fav.UserId == userId && fav.State == (int)BookState.InProgress);
-        });
+        }).RequireAuthorization();
     }
 }

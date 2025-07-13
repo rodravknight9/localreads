@@ -1,5 +1,6 @@
 ﻿using LocalReads.API.Configurations;
 using LocalReads.API.Context;
+using LocalReads.Shared.Constants;
 using LocalReads.Shared.DataTransfer.User;
 using LocalReads.Shared.Domain;
 using LocalReads.Shared.Enums;
@@ -33,6 +34,14 @@ public static class UserEndpoints
             };
             await db.Users.AddAsync(newUser);
             await db.SaveChangesAsync();
+
+            var logAction = new LogAction
+            {
+                Action = string.Format(LogActionConstants.UserRegistered, newUser.UserName),
+                Table = nameof(User),
+                RecordId = newUser.Id.ToString(),
+                ActionTime = DateTime.Now
+            };
 
             return Results.Created();
         });
@@ -71,7 +80,7 @@ public static class UserEndpoints
                 return mappedUser;
             });
             return usersResponse;
-        });
+        }).RequireAuthorization();
 
         app.MapGet("/user/{userId}", async (int userId, LocalReadsContext db, IMapper mapper) =>
         {
@@ -86,7 +95,7 @@ public static class UserEndpoints
                     db.Favorites.Where(fav => fav.User.Id == userId && fav.Rating > 0).Average(fav => fav.Rating);
             }
             return userResponse;
-        });
+        }).RequireAuthorization();
 
         app.MapPut("/user", async (User user, LocalReadsContext db) =>
         {
@@ -95,7 +104,7 @@ public static class UserEndpoints
             db.Users.Update(user);
             await db.SaveChangesAsync();
             return Results.NoContent();
-        });
+        }).RequireAuthorization();
     }
 
     private static string GenerateJwtToken(User user, JwtSettings jwtSettings)

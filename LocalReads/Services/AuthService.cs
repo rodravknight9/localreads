@@ -55,4 +55,13 @@ public class AuthService : IAuthService
         var user = JsonSerializer.Deserialize<AuthResponse>(userState);
         _appState.UserState.OnUserLog(user!);
     }
+
+    public async Task<string> GetUserToken()
+    {
+        var userState = await _localStorage.GetItemAsStringAsync("userState");
+        if (string.IsNullOrEmpty(userState))
+            return string.Empty;
+        var user = JsonSerializer.Deserialize<AuthResponse>(userState);
+        return user?.Jwt.Replace("Bearer ", "") ?? string.Empty;
+    }
 }

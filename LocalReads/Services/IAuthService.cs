@@ -8,5 +8,6 @@ namespace LocalReads.Services
         public Task Logout();
         public Task<bool> IsLoggedIn();
         public Task PersistLoggedInUser();
+        public Task<string> GetUserToken();
     }
 }
