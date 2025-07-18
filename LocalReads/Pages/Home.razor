@@ -43,18 +43,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            await AuthService.PersistLoggedInUser();
-            var userId = AppState.UserState.User.Id;
-            _favorites =
-                (await HttpRequest.Get<List<Favorite>>($"/favorite/inprogress/{userId}")).Content;
-        }
-        catch (Exception e)
-        {
-            
-            Console.WriteLine(e.Message);
-        }
+        _favorites = (await HttpRequest.Get<List<Favorite>>($"/favorite/inprogress")).Content;
     }
 
     private async Task UpdateProgress(Favorite favorite)

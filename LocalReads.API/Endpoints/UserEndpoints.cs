@@ -1,10 +1,14 @@
 ﻿using LocalReads.API.Configurations;
 using LocalReads.API.Context;
+using LocalReads.API.Hubs;
+using LocalReads.API.Hubs.Interfaces;
 using LocalReads.Shared.Constants;
+using LocalReads.Shared.DataTransfer.Notifications;
 using LocalReads.Shared.DataTransfer.User;
 using LocalReads.Shared.Domain;
 using LocalReads.Shared.Enums;
 using MapsterMapper;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -18,7 +22,7 @@ public static class UserEndpoints
 {
     public static void MapUserEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/users/register", async (RegisterUser request, LocalReadsContext db) =>
+        app.MapPost("/users/register", async (RegisterUser request, LocalReadsContext db, IHubContext<NotificationHub, INotification> hub) =>
         {
             var existingUsers = db.Users.Where(u => u.UserName == request.UserName);
             if (existingUsers.Any())
@@ -33,15 +37,27 @@ public static class UserEndpoints
                 Password = password
             };
             await db.Users.AddAsync(newUser);
+
             await db.SaveChangesAsync();
 
             var logAction = new LogAction
             {
                 Action = string.Format(LogActionConstants.UserRegistered, newUser.UserName),
                 Table = nameof(User),
-                RecordId = newUser.Id.ToString(),
+                RecordId = newUser.Id,
                 ActionTime = DateTime.Now
             };
+            await db.LogActions.AddAsync(logAction);
+
+            await db.SaveChangesAsync();
+
+            var notification = new Notification
+            {
+                CreatedAt = DateTime.Now,
+                IsRead = false,
+                Message = logAction.Action
+            };
+            await hub.Clients.All.ReceiveNotification(notification);
 
             return Results.Created();
         });

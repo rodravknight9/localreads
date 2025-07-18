@@ -1,6 +1,7 @@
 using LocalReads.API.Configurations;
 using LocalReads.API.Context;
 using LocalReads.API.Endpoints;
+using LocalReads.API.Hubs;
 using LocalReads.API.Middlewares;
 using LocalReads.API.Services;
 using Mapster;
@@ -47,7 +48,7 @@ builder.Services.AddAuthentication(opt =>
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]!))
     };
 });
-
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 app.UseCors(x =>
@@ -78,11 +79,12 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<LocalReadsContext>();
     db.Database.Migrate();
 }
+
 app.UseMiddleware<UserMiddleware>();
+app.MapHub<NotificationHub>("/notification-hub");
 
 app.UseAuthentication();
 app.UseAuthorization();
-
 //app.UseHttpsRedirection();
 app.Run();
 

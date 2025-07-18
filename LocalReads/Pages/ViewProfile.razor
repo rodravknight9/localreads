@@ -50,7 +50,7 @@
     
     protected override async Task OnInitializedAsync()
     {
-        User = (await HttpRequest.Get<UserResponse>($"/user/{id}")).Content; //State.UserState.User;
+        User = (await HttpRequest.Get<UserResponse>($"/user/{id}")).Content;
     }
 
     private string GetUserName()

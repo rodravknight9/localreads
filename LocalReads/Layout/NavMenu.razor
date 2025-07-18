@@ -1,5 +1,6 @@
 ﻿@inject NavigationManager Navigation
 @inject IAuthService AuthService
+@inject NotificationService NotificationService
 @inject AppState AppState
 
 <MudAppBar Style="padding: 0 70px; height: 70px;" Class="mb-1">
@@ -24,6 +25,27 @@
     <MudSpacer/>
     <AuthorizeView>
         <Authorized>
+            <MudMenu MaxHeight="200" TransformOrigin="Origin.TopRight">
+                <ActivatorContent>
+                    <MudBadge Content="@NotificationService.NotificationCount" Overlap="true" Class="d-flex justify-center align-center">
+                        <MudIcon Icon="@Icons.Material.Outlined.Notifications" />
+                    </MudBadge>
+                </ActivatorContent>
+                <ChildContent>
+                    <MudMenuItem>
+                            <MudText Typo="Typo.body2" Style="font-size: 10px">Mark all as read</MudText>
+                    </MudMenuItem>
+                    @foreach (var item in NotificationService.Notifications)
+                    {
+                        <MudMenuItem>
+                            <MudElement Class="d-flex flex-column">
+                                <MudText Typo="Typo.body2" Style="font-size: 10px">@item.Message</MudText>
+                                <MudText Typo="Typo.body2" Style="font-size: 10px">@item.CreatedAt</MudText>
+                            </MudElement>
+                        </MudMenuItem>
+                    }
+                </ChildContent>
+            </MudMenu>
             <a href="/" @onclick="LogOut" Class="custom-link d-flex justify-center align-center">
                 <MudIcon Icon="@Icons.Material.Outlined.Logout" Title="LogOut"/>
             </a>
@@ -40,6 +62,12 @@
 </MudAppBar>
 
 @code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        NotificationService.OnNotificationReceived += StateHasChanged;
+        await NotificationService.StartAsync();
+    }
 
     private void HandleSearch(string term)
     {

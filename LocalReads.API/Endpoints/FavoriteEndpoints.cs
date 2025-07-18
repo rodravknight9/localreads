@@ -1,4 +1,5 @@
 ﻿using LocalReads.API.Context;
+using LocalReads.Shared.Constants;
 using LocalReads.Shared.DataTransfer.Books;
 using LocalReads.Shared.DataTransfer.Favorites;
 using LocalReads.Shared.Domain;
@@ -14,8 +15,9 @@ public static class FavoriteEndpoints
 {
     public static void MapFavoriteEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/favorite", async (CreateFavorite favorite, LocalReadsContext db) =>
+        app.MapPost("/favorite", async (CreateFavorite favorite, LocalReadsContext db, HttpContext context) =>
         {
+            string bookList = string.Empty;
             var bookExists = db.Books
                 .FirstOrDefault(b => b.BookGoogleId == favorite.Book.BookGoogleId);
 
@@ -36,30 +38,48 @@ public static class FavoriteEndpoints
             switch (favorite.State) 
             {
                 case (int)BookState.InProgress:
+                    bookList = nameof(BookState.InProgress);
                     newFavorite.State = (int)BookState.InProgress;
                     newFavorite.Progress = favorite.Progress;
                     break;
                 case (int)BookState.AlreadyRead:
+                    bookList = nameof(BookState.AlreadyRead);
                     newFavorite.State = (int)BookState.AlreadyRead;
                     newFavorite.Progress = 100;
                     newFavorite.ReadTime = favorite.ReadTime;
                     break;
                 case (int)BookState.WantToRead:
+                    bookList = nameof(BookState.WantToRead);
                     newFavorite.State = (int)BookState.WantToRead;
                     newFavorite.Progress = 0;
                     break;
                 case (int)BookState.Abandoned:
+                    bookList = nameof(BookState.Abandoned);
                     newFavorite.State = (int)BookState.Abandoned;
                     break;
             }
 
             await db.AddAsync(newFavorite);
+
+            db.SaveChanges();
+
+            var logAction = new LogAction
+            {
+                Action = string.Format(LogActionConstants.FavoriteAdded, 
+                    context.Items["UserName"], favorite.Book.Title, bookList),
+                Table = nameof(Favorite),
+                RecordId = newFavorite.Id,
+                ActionTime = DateTime.Now,
+                UserId = favorite.UserId
+            };
+
+            db.LogActions.Add(logAction);
             db.SaveChanges();
 
             return Results.Created();
         }).RequireAuthorization();
 
-        app.MapGet("/favorites/{userId}", async ([FromQuery] string type, [FromRoute] int userId, LocalReadsContext db, HttpContext context, IMapper mapper) =>
+        app.MapGet("/favorites", ([FromQuery] string type, LocalReadsContext db, HttpContext context, IMapper mapper) =>
         {
             var filterType = type switch
             {
@@ -70,7 +90,7 @@ public static class FavoriteEndpoints
                 _ => 0
             };
 
-            var user = context.Items["UserId"];
+            var userId = (int)context.Items["UserId"]!;
 
             var favorites = db.Favorites
                 .AsNoTracking()
@@ -100,8 +120,7 @@ public static class FavoriteEndpoints
                 db.SaveChanges();
             }
 
-            //int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var user = context.Items["User"];
+            var user = context.Items["userId"];
 
             return Results.Ok();
         }).RequireAuthorization();
@@ -126,9 +145,9 @@ public static class FavoriteEndpoints
             db.SaveChanges();
         }).RequireAuthorization();
 
-        app.MapGet("/favorite/inprogress/{userId}", (int userId, LocalReadsContext db, HttpContext context) =>
+        app.MapGet("/favorite/inprogress", (LocalReadsContext db, HttpContext context) =>
         {
-            var user = context.Items["UserId"];
+            var userId = (int)context.Items["UserId"]!;
 
             return db.Favorites
                 .AsNoTracking()

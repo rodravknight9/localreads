@@ -111,9 +111,7 @@
     protected override async Task OnInitializedAsync()
     {
         //TODO: Get rid of this, need to be persisiting with the User State
-        await AuthService.PersistLoggedInUser();
-        var userId = AppState.UserState.User.Id;
-        _favorites = (await HttpRequest.Get<List<GetFavorite>>($"/favorites/{userId}?type={_listType}")).Content;
+        _favorites = (await HttpRequest.Get<List<GetFavorite>>($"/favorites?type={_listType}")).Content;
     }
 
     private async Task RateBook(Favorite favorite)
@@ -179,9 +177,7 @@
         if (_favTable != null)
         {
             _listType = listType;
-            await AuthService.PersistLoggedInUser();
-            var userId = AppState.UserState.User.Id;
-            _favorites = (await HttpRequest.Get<List<GetFavorite>>($"/favorites/{userId}?type={listType}")).Content;
+            _favorites = (await HttpRequest.Get<List<GetFavorite>>($"/favorites?type={listType}")).Content;
             await _favTable.ReloadServerData();       
         }
     }

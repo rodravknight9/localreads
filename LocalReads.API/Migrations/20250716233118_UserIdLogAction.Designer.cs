@@ -3,6 +3,7 @@ using System;
 using LocalReads.API.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LocalReads.API.Migrations
 {
     [DbContext(typeof(LocalReadsContext))]
-    partial class LocalReadsContextModelSnapshot : ModelSnapshot
+    [Migration("20250716233118_UserIdLogAction")]
+    partial class UserIdLogAction
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
@@ -140,8 +143,9 @@ namespace LocalReads.API.Migrations
                     b.Property<DateTime>("ActionTime")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("RecordId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("RecordId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Table")
                         .IsRequired()
