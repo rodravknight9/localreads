@@ -22,11 +22,8 @@
 
     private async Task OnSearchClicked()
     {
-        // var books = (await HttpRequest.Get<List<GoogleBook>>($"/googlebooks/search/{SearchTerm}"))
-        //     .Content.Select(BookDto.FromBook);
-        // AppState.SearchResults.SetSearchResults(books.ToList());
         AppState.SearchResults.TermSearch = SearchTerm;
-        //Navigation.NavigateTo("/searchbooks");
+        Navigation.NavigateTo("/searchbooks");
         if (OnSearch.HasDelegate)
         {
             await OnSearch.InvokeAsync(SearchTerm);

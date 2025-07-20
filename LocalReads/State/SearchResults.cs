@@ -26,19 +26,17 @@ public class SearchResults
         set 
         {
             _termSearch = value;
-            NotifyStateChanged();
+            NotifySearchTermStateChanged();
         } 
     }
-    public event Action? OnChange;
+    public event Action? OnTermSearchChange;
 
     public event Action? OnBooksSearchChanged;
     public void SetSearchResults(List<BookDto> books)
     {
-        //NotifySearchResultsChanged();
         Books = books;
-        NotifyStateChanged();
     }
-    private void NotifyStateChanged() => OnChange?.Invoke();
+    private void NotifySearchTermStateChanged() => OnTermSearchChange?.Invoke();
     private void NotifySearchResultsChanged() => OnBooksSearchChanged?.Invoke();
 
 }

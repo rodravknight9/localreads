@@ -6,55 +6,82 @@
 @inject IHttpRequest HttpRequest
 @inject AppState AppState
 
-<MudText>Resultados de: @AppState.SearchResults.TermSearch</MudText>
-<MudDivider Style="margin-bottom: 2rem"/>
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudPaper Elevation="3" Class="pa-6">
+        <MudStack Direction="Row" AlignItems="AlignItems.Center" JustifyContent="SpaceBetween" Class="mb-4">
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
+                @if (!string.IsNullOrWhiteSpace(AppState.SearchResults.TermSearch))
+                {
+                    <span>for "<b>@AppState.SearchResults.TermSearch</b>"</span>
+                }
+            </MudText>
+        </MudStack>
+        <MudDivider Class="mb-4" />
 
-<MudTable 
-    @ref="_table"
-    Items="@AppState.SearchResults.Books"
-    Hover="true"
-    Breakpoint="Breakpoint.Sm"
-    LoadingProgressColor="Color.Info"
-    HorizontalScrollbar="true"
-    Height="550px"
-    FixedHeader="true"
-    ServerData="TableReload" Dense="true">
-    <HeaderContent>
-        <MudTh>Cover</MudTh>
-        <MudTh>Title</MudTh>
-        <MudTh>Authors</MudTh>
-        <MudTh>Publisher</MudTh>
-        <MudTh>Page Count</MudTh>
-        <MudTh>Published Date</MudTh>
-        <MudTh>Categories</MudTh>
-        <MudTh>Actions</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd><MudImage Src="@context.ImageLink" Width="40" /></MudTd>
-        <MudTd DataLabel="Nr">@context.Title</MudTd>
-        <MudTd DataLabel="Nr">@context.Authors</MudTd>
-        <MudTd DataLabel="Nr">@context.Publisher</MudTd>
-        <MudTd DataLabel="Nr">@context.PageCount</MudTd>
-        <MudTd DataLabel="Nr">@context.PublishedDate</MudTd>
-        <MudTd DataLabel="Nr">@context.Categories</MudTd>
-        <MudTd DataLabel="Nr" Class="d-flex align-center">
-            <MudCardActions Class="d-flex justify-end">
-                <MudMenu StartIcon="@Icons.Material.Filled.More"
-                         Color="Color.Dark"
-                         Variant="Variant.Text"
-                         Label="More">
-                    <MudMenuItem @onclick="@(e => AddToFavorites(@context, BookState.WantToRead))">Add to the Want to Read list</MudMenuItem>
-                    <MudMenuItem @onclick="@(e => AddToFavorites(@context, BookState.InProgress))">Mark as In Progress</MudMenuItem>
-                    <MudMenuItem @onclick="@(e => AddToFavorites(@context, BookState.AlreadyRead))">Add as Read</MudMenuItem>
-                    <MudMenuItem @onclick="@(e => AddToFavorites(@context, BookState.Abandoned))">Add as Abandoned</MudMenuItem>
-                </MudMenu>
-            </MudCardActions>
-        </MudTd>
-    </RowTemplate>
-    <PagerContent>
-        <MudTablePager />
-    </PagerContent>
-</MudTable>
+        @* @if (AppState.SearchResults.Books == null || !AppState.SearchResults.Books.Any()) *@
+        @if (string.IsNullOrEmpty(AppState.SearchResults.TermSearch))
+        {
+            <MudText Typo="Typo.h6" Color="Color.Secondary" Align="Align.Center" Class="my-8">
+                No books found. Try a different search term.
+            </MudText>
+        }
+        else
+        {
+            <MudTable @ref="_table"
+                      Items="@AppState.SearchResults.Books"
+                      Hover="true"
+                      Striped="true"
+                      Dense="false"
+                      Breakpoint="Breakpoint.Sm"
+                      LoadingProgressColor="Color.Info"
+                      HorizontalScrollbar="true"
+                      Height="550px"
+                      FixedHeader="true"
+                      Elevation="1"
+                      ServerData="TableReload">
+                <HeaderContent>
+                    <MudTh>Cover</MudTh>
+                    <MudTh>Title</MudTh>
+                    <MudTh>Authors</MudTh>
+                    <MudTh>Publisher</MudTh>
+                    <MudTh>Page Count</MudTh>
+                    <MudTh>Published Date</MudTh>
+                    <MudTh>Categories</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>
+                        <MudImage Src="@(!string.IsNullOrWhiteSpace(context.ImageLink) ? context.ImageLink : "images/placeholder-book.png")"
+                                  Width="40" Alt="Book cover" />
+                    </MudTd>
+                    <MudTd>@context.Title</MudTd>
+                    <MudTd>@context.Authors</MudTd>
+                    <MudTd>@context.Publisher</MudTd>
+                    <MudTd>@context.PageCount</MudTd>
+                    <MudTd>@context.PublishedDate</MudTd>
+                    <MudTd>@context.Categories</MudTd>
+                    <MudTd Class="d-flex align-center">
+                        <MudTooltip Text="Add to Want to Read">
+                            <MudIconButton Icon="@Icons.Material.Filled.BookmarkAdd" Color="Color.Info" OnClick="@(e => AddToFavorites(context, BookState.WantToRead))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Mark as In Progress">
+                            <MudIconButton Icon="@Icons.Material.Filled.AutoStories" Color="Color.Primary" OnClick="@(e => AddToFavorites(context, BookState.InProgress))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Add as Read">
+                            <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" OnClick="@(e => AddToFavorites(context, BookState.AlreadyRead))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Add as Abandoned">
+                            <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" OnClick="@(e => AddToFavorites(context, BookState.Abandoned))" />
+                        </MudTooltip>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        }
+    </MudPaper>
+</MudContainer>
 
 @code
 {
@@ -64,17 +91,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-
-        if (string.IsNullOrEmpty(AppState.SearchResults.TermSearch))
-        {
-            var books = (await HttpRequest.Get<List<GoogleBook>>("/googlebooks/random"))
-                .Content.Select(BookDto.FromBook);
-            AppState.SearchResults.SetSearchResults(books.ToList());
-            //_guardOldSearch = AppState.SearchResults.TermSearch;
-        }
-
-        // move the Trigger reload after the default data is filled up to avoid an infinte loop
-        AppState.SearchResults.OnChange += StateHasChanged;
+        AppState.SearchResults.OnTermSearchChange += StateHasChanged;
         AppState.SearchResults.OnBooksSearchChanged += TriggerReload;
         if (AppState.UserState.User == null)
         {
@@ -85,7 +102,7 @@
 
     public void Dispose()
     {
-        AppState.SearchResults.OnChange -= StateHasChanged;
+        AppState.SearchResults.OnTermSearchChange -= StateHasChanged;
         AppState.SearchResults.OnBooksSearchChanged -= TriggerReload;
     }
 
@@ -124,6 +141,15 @@
     {
         try
         {
+            if (AppState.SearchResults == null || string.IsNullOrEmpty(AppState.SearchResults.TermSearch))
+            {
+                return new TableData<BookDto>()
+                {
+                    Items = null ,
+                    TotalItems = 0
+                };
+            }
+
             var booksData = (await HttpRequest.Get<Root>($"/googlebooks/range/{AppState.SearchResults.TermSearch}/{state.Page}/{state.PageSize}"))
                 .Content;
 

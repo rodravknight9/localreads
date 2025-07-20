@@ -12,29 +12,21 @@ public class NotificationService
 
     public async Task StartAsync()
     {
-        try
+        await Task.Delay(100);
+
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:7223/notification-hub")
+            .WithAutomaticReconnect()
+            .Build();
+
+        _hubConnection.On<Notification>("ReceiveNotification", (notification) =>
         {
-            await Task.Delay(100);
+            Notifications.Enqueue(notification);
+            NotificationCount++;
+            OnNotificationReceived?.Invoke();
+        });
 
-            _hubConnection = new HubConnectionBuilder()
-                .WithUrl("https://localhost:7223/notification-hub")
-                .WithAutomaticReconnect()
-                .Build();
-
-            _hubConnection.On<Notification>("ReceiveNotification", (notification) =>
-            {
-                Notifications.Enqueue(notification);
-                NotificationCount++;
-                OnNotificationReceived?.Invoke();
-            });
-
-            await _hubConnection.StartAsync();
-        }
-        catch (Exception e)
-        {
-
-            throw;
-        }
+        await _hubConnection.StartAsync();
        
     }
 }
