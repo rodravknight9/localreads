@@ -15,18 +15,11 @@
 </div>
 
 @code {
-    [Parameter]
-    public EventCallback<string> OnSearch { get; set; }
-
     private string SearchTerm { get; set; } = "";
 
     private async Task OnSearchClicked()
     {
         AppState.SearchResults.TermSearch = SearchTerm;
         Navigation.NavigateTo("/searchbooks");
-        if (OnSearch.HasDelegate)
-        {
-            await OnSearch.InvokeAsync(SearchTerm);
-        }
     }
 }

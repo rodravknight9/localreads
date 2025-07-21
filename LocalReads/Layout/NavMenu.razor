@@ -3,7 +3,7 @@
 @inject NotificationService NotificationService
 @inject AppState AppState
 
-<MudAppBar Style="padding: 0 70px; height: 70px;" Class="mb-1">
+<MudAppBar Style="padding: 0 70px; height: 70px;">
     <MudText Typo="Typo.h5">LocalReads</MudText>
     <AuthorizeView>
         <Authorized>
@@ -13,15 +13,12 @@
             <a href="/mybooks" Class="custom-link d-flex justify-center align-center">
                 My Books
             </a>
-@*             <a href="/searchbooks" Class="custom-link d-flex justify-center align-center">
-                Search
-            </a> *@
             <a href="/myserver" Class="custom-link d-flex justify-center align-center">
                 My Server
             </a>
+            <SearchBox />
         </Authorized>
     </AuthorizeView>
-    <SearchBox OnSearch="HandleSearch"/>
     <MudSpacer/>
     <AuthorizeView>
         <Authorized>
@@ -51,13 +48,6 @@
             </a>
             <MudAvatar @onclick="ToProfile" Color="Color.Secondary" Class="cursor-default">@GetUsernameFirstLetter()</MudAvatar>
         </Authorized>
-        <NotAuthorized>
-            <MudIcon
-                Icon="@Icons.Material.Outlined.Login"
-                Title="Log In"
-                Size="Size.Large"
-                @onclick="HandleClick"/>
-        </NotAuthorized>
     </AuthorizeView>
 </MudAppBar>
 
@@ -67,16 +57,6 @@
     {
         NotificationService.OnNotificationReceived += StateHasChanged;
         await NotificationService.StartAsync();
-    }
-
-    private void HandleSearch(string term)
-    {
-        AppState.SearchResults.TermSearch = term;
-    }
-
-    private void HandleClick()
-    {
-        Navigation.NavigateTo("/login");
     }
 
     protected override void OnInitialized()
@@ -104,6 +84,7 @@
     private async Task LogOut()
     {
         await AuthService.Logout();
+        Navigation.NavigateTo("/login");
     }
 
 }

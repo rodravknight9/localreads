@@ -1,28 +1,54 @@
 ﻿@page "/register"
-
+@layout LoginLayout
 @inject NavigationManager Navigation
 @inject IHttpRequest HttpRequest
 @inject IAuthService AuthService
 @inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
-<MudContainer>
-    <MudItem xs="12" sm="7">
-        <MudPaper Class="pa-4">
-            <MudText Typo="Typo.h4">Register</MudText>  
-            <MudForm Model="@RegisterUser" Style="margin-bottom: 1rem">
-                <MudTextField T="string" Label="Username" @bind-Value="@RegisterUser.UserName"/>
-                <MudTextField T="string" Label="Name" @bind-Value="@RegisterUser.Name"/>
-                <MudTextField T="string" Label="Password" @bind-Value="@RegisterUser.Password" InputType="InputType.Password"/>
-            </MudForm>
-            <MudElement>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="HandleRegister">Register</MudButton>
-            </MudElement>
-        </MudPaper>
-    </MudItem>
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge"
+              Class="d-flex flex-column align-center justify-center"
+              Style="min-height: 100vh; min-width: 99vw; background-image: url('https://images.unsplash.com/photo-1526243741027-444d633d7365?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');">
+    <MudPaper Elevation="6" Class="pa-6" Style="width:100%; max-width:400px;">
+        <MudStack Spacing="2" AlignItems="AlignItems.Center">
+            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Large" Color="Color.Primary" />
+            <MudText Typo="Typo.h4" Class="mb-1">Sign up to LocalReads</MudText>
+            <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Class="mb-4">Create your new account below.</MudText>
+        </MudStack>
+        <MudForm @ref="_form" Model="@RegisterUser" Class="mb-4">
+            <MudTextField T="string" Label="Name" @bind-Value="@RegisterUser.Name" Required="true" For="@(() => RegisterUser.Name)" />
+            <MudTextField T="string" Label="Username" @bind-Value="@RegisterUser.UserName" Required="true" For="@(() => RegisterUser.UserName)" />
+            <MudTextField T="string" Label="Password" @bind-Value="@RegisterUser.Password" InputType="InputType.Password" Required="true" For="@(() => RegisterUser.Password)" />
+            @if (!string.IsNullOrEmpty(_error))
+            {
+                <MudText Typo="Typo.caption" Color="Color.Error" Class="mt-2">@_error</MudText>
+            }
+        </MudForm>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="my-2" FullWidth="true" Disabled="@_isLoading" OnClick="HandleRegister">
+            @if (_isLoading)
+            {
+                <MudProgressCircular Indeterminate="true" Size="Size.Medium" Class="me-2" />
+                <MudText Typo="Typo.body1" Color="Color.Secondary">Signing in...</MudText>
+            }
+            else
+            {
+                <MudText Typo="Typo.body1" Style="color: white">Register</MudText>
+            }
+        </MudButton>
+        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-3">
+            Already have an account?
+            <MudLink Href="/login" Color="Color.Primary" Class="ms-1">Login</MudLink>
+        </MudText>
+    </MudPaper>
 </MudContainer>
 
 @code {
+
+    private MudForm _form;
     public RegisterUser RegisterUser { get; set; } = new RegisterUser();
+
+    private string _error = string.Empty;
+    private bool _isLoading = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -34,22 +60,9 @@
     {
         var res = await HttpRequest.SimplePost<RegisterUser>(RegisterUser, "/users/register");
         var userMessage = res.Success ? "Registration was successful" : res.ErrorMessage;
+        var severity = res.Success ? Severity.Success : Severity.Error;
 
-        var parameters = new DialogParameters
-        {
-            { "Title", "Registration" },
-            { "Message", userMessage }
-        };
-
-        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small };
-
-        var dialog = await DialogService.ShowAsync<GenericDialog>("", parameters, options);
-        var result = await dialog.Result;
-
-        if (!result!.Canceled && res.Success)
-        {
-            Navigation.NavigateTo("/login");
-        }
-
+        Snackbar.Add(userMessage, severity);
+        await _form.ResetAsync();
     }
 }

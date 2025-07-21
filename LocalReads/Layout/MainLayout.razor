@@ -5,10 +5,8 @@
 
 <MudLayout>
     <NavMenu />
-    <MudMainContent Class="content" Style="width: 90%;">
-        @* <CascadingValue Value="@AppState"> *@
+    <MudMainContent Class="content">
         @Body
-        @* </CascadingValue> *@
     </MudMainContent>
 </MudLayout>
 
@@ -25,8 +23,18 @@
 
 @code
 {
+    private string styles = "width: 100%; padding: 0;";
     protected override async Task OnInitializedAsync()
     {
+        if (!(await AuthService.IsLoggedIn()))
+        {
+            styles = "width: 100%; padding: 0; margin: 0";
+        }
+        else
+        {
+            styles = "width: 100%;";
+        }
+
         if (AppState.UserState.User == null)
         {
             await AuthService.PersistLoggedInUser();

@@ -3,9 +3,10 @@
 @inject AppState AppState
 @inject IAuthService AuthService
 @inject IDialogService DialogService
-
+@inject NavigationManager Navigation
 
 <MudContainer>
+    <MudElement Class="mb-10"/>
     <MudElement Class="d-flex flex-column" Style="width: 30%;">
         <MudText Typo="Typo.body1" Class="mb-4">Currently Reading</MudText>
         @foreach (var fav in _favorites)
@@ -43,6 +44,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!(await AuthService.IsLoggedIn()))
+        {
+            Navigation.NavigateTo("/login");
+        }
+
         _favorites = (await HttpRequest.Get<List<Favorite>>($"/favorite/inprogress")).Content;
     }
 

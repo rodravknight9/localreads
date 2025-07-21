@@ -1,0 +1,16 @@
+﻿@inherits LayoutComponentBase
+
+<div style="margin: 0; padding: 0">
+    @Body
+</div>
+
+@* Required *@
+<MudThemeProvider />
+<MudPopoverProvider />
+
+@* Needed for dialogs *@
+<MudDialogProvider FullWidth="true"
+                   MaxWidth="MaxWidth.ExtraSmall" />
+
+@* Needed for snackbars *@
+<MudSnackbarProvider />
