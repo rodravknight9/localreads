@@ -1,7 +1,9 @@
 ﻿using LocalReads.Models;
 using LocalReads.Shared.DataTransfer;
 using LocalReads.Shared.DataTransfer.User;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using MudBlazor;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
@@ -9,173 +11,178 @@ using System.Text.Json;
 
 namespace LocalReads.Services;
 
-public class HttpRequest : HttpClient, IHttpRequest
+public class HttpRequest : IHttpRequest
 {
     private readonly HttpClient _httpClient;
     private readonly IJSRuntime _js;
+    private readonly NavigationManager _navigationManager;
+    private readonly ISnackbar _snackbar;
 
-    public HttpRequest(HttpClient  httpClient, IJSRuntime js)
+    public HttpRequest(HttpClient httpClient, IJSRuntime js, NavigationManager navigationManager, ISnackbar snackbar)
     {
         _httpClient = httpClient;
         _js = js;
+        _navigationManager = navigationManager;
+        _snackbar = snackbar;
     }
 
     public async Task<HttpResponse<T>> Post<T, Y>(Y entity, string path)
     {
-        var httpResult = new HttpResponse<T>();
-        using StringContent jsonContent = new(JsonSerializer.Serialize(entity), Encoding.UTF8, "application/json");
-
-        try
-        {
-            await SetJwtIntoClient();
-            var result = await _httpClient.PostAsync(path, jsonContent);
-            var stringResult = await result.Content.ReadAsStringAsync();
-            httpResult.StatusCode = result.StatusCode;
-            httpResult.Content = JsonSerializer.Deserialize<T>(stringResult)!;
-            httpResult.Success = (int)result.StatusCode >= 200 && (int)result.StatusCode < 300;
-            return httpResult;
-        }
-        catch (Exception e)
-        {
-            httpResult.Success = false;
-            httpResult.ErrorMessage = e.Message;
-            return httpResult;
-        }
+        return await SendRequest<T>(HttpMethod.Post, path, entity);
     }
 
     public async Task Post<T>(T entity, string path)
     {
         await SetJwtIntoClient();
-        using StringContent jsonContent = new(JsonSerializer.Serialize(entity), Encoding.UTF8, "application/json");
-        var result = await _httpClient.PostAsync(path, jsonContent);
+        var content = CreateJsonContent(entity);
+        var response = await _httpClient.PostAsync(path, content);
+        if ((int)response.StatusCode == 401)
+        {
+            await HandleLogOut();
+            return;
+        }
     }
-
 
     public async Task<SimpleHttpResponse> SimplePost<T>(T entity, string path)
     {
-        var httpResult = new SimpleHttpResponse();
-        using StringContent jsonContent = new(JsonSerializer.Serialize(entity), Encoding.UTF8, "application/json");
-
-        try
-        {
-            await SetJwtIntoClient();
-            var result = await _httpClient.PostAsync(path, jsonContent);
-            var stringResult = await result.Content.ReadAsStringAsync();
-            httpResult.StatusCode = result.StatusCode;
-            httpResult.Success = (int)result.StatusCode >= 200 && (int)result.StatusCode < 300;
-
-            if (!httpResult.Success) 
-            {
-                httpResult.ErrorMessage = await result.Content.ReadAsStringAsync();
-            }
-
-            return httpResult;
-        }
-        catch (Exception e)
-        {
-            httpResult.Success = false;
-            httpResult.ErrorMessage = e.Message;
-            return httpResult;
-            throw;
-        }
+        return await SendSimpleRequest(HttpMethod.Post, path, entity);
     }
 
     public async Task<HttpResponse<T>> Get<T>(string path)
     {
         var httpResult = new HttpResponse<T>();
+
         try
         {
             await SetJwtIntoClient();
-            var options = new JsonSerializerOptions{ PropertyNameCaseInsensitive = true };
-            var result = await _httpClient.GetAsync(path);
-            var stringResult = await result.Content.ReadAsStringAsync();
-            httpResult.Content = JsonSerializer.Deserialize<T>(stringResult, options)!;
-            return httpResult;
+            var response = await _httpClient.GetAsync(path);
+
+            if ((int)response.StatusCode == 401)
+            {
+                await HandleLogOut();
+                _snackbar.Add("Session Expired", Severity.Warning);
+                httpResult.Success = false;
+                return httpResult;
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            httpResult.Content = JsonSerializer.Deserialize<T>(content, options)!;
+            httpResult.StatusCode = response.StatusCode;
+            httpResult.Success = response.IsSuccessStatusCode;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
             httpResult.Success = false;
-            httpResult.ErrorMessage = e.Message;
-            return httpResult;
+            httpResult.ErrorMessage = ex.Message;
         }
+
+        return httpResult;
     }
 
     public async Task<SimpleHttpResponse> Delete(string path)
     {
-        await SetJwtIntoClient();
         var httpResult = new SimpleHttpResponse();
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var result = await _httpClient.DeleteAsync(path);
-        httpResult.Success = result.IsSuccessStatusCode; 
-        return httpResult;
+        await SetJwtIntoClient();
+        var response = await _httpClient.DeleteAsync(path);
+        if ((int)response.StatusCode == 401)
+        {
+            await HandleLogOut();
+            _snackbar.Add("Session Expired", Severity.Warning);
+            httpResult.Success = false;
+            return httpResult;
+        }
+        return new SimpleHttpResponse
+        {
+            Success = response.IsSuccessStatusCode,
+            StatusCode = response.StatusCode
+        };
     }
 
     public async Task<SimpleHttpResponse> SimplePut<T>(T entity, string path)
     {
-        var httpResult = new SimpleHttpResponse();
-        using StringContent jsonContent = new(JsonSerializer.Serialize(entity), Encoding.UTF8, "application/json");
-
-        try
-        {
-            await SetJwtIntoClient();
-            var result = await _httpClient.PutAsync(path, jsonContent);
-            var stringResult = await result.Content.ReadAsStringAsync();
-            httpResult.StatusCode = result.StatusCode;
-            httpResult.Success = (int)result.StatusCode >= 200 && (int)result.StatusCode < 300;
-
-            if (!httpResult.Success) 
-            {
-                httpResult.ErrorMessage = await result.Content.ReadAsStringAsync();
-            }
-
-            return httpResult;
-        }
-        catch (Exception e)
-        {
-            httpResult.Success = false;
-            httpResult.ErrorMessage = e.Message;
-            return httpResult;
-        }
+        return await SendSimpleRequest(HttpMethod.Put, path, entity);
     }
 
     public async Task<SimpleHttpResponse> SimplePatch<T>(T entity, string path)
     {
-        var httpResult = new SimpleHttpResponse();
-        using StringContent jsonContent = new(JsonSerializer.Serialize(entity), Encoding.UTF8, "application/json");
+        return await SendSimpleRequest(new HttpMethod("PATCH"), path, entity);
+    }
+
+    private async Task<HttpResponse<T>> SendRequest<T>(HttpMethod method, string path, object body)
+    {
+        var httpResult = new HttpResponse<T>();
 
         try
         {
             await SetJwtIntoClient();
-            var result = await _httpClient.PatchAsync(path, jsonContent);
-            var stringResult = await result.Content.ReadAsStringAsync();
-            httpResult.StatusCode = result.StatusCode;
-            httpResult.Success = (int)result.StatusCode >= 200 && (int)result.StatusCode < 300;
+            var request = new HttpRequestMessage(method, path)
+            {
+                Content = CreateJsonContent(body)
+            };
+
+            var response = await _httpClient.SendAsync(request);
+            var stringContent = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+            httpResult.StatusCode = response.StatusCode;
+            httpResult.Success = response.IsSuccessStatusCode;
+            httpResult.Content = JsonSerializer.Deserialize<T>(stringContent, options)!;
+        }
+        catch (Exception ex)
+        {
+            httpResult.Success = false;
+            httpResult.ErrorMessage = ex.Message;
+        }
+
+        return httpResult;
+    }
+
+    private async Task<SimpleHttpResponse> SendSimpleRequest(HttpMethod method, string path, object body)
+    {
+        var httpResult = new SimpleHttpResponse();
+
+        try
+        {
+            await SetJwtIntoClient();
+            var request = new HttpRequestMessage(method, path)
+            {
+                Content = CreateJsonContent(body)
+            };
+
+            var response = await _httpClient.SendAsync(request);
+            httpResult.StatusCode = response.StatusCode;
+            httpResult.Success = response.IsSuccessStatusCode;
 
             if (!httpResult.Success)
             {
-                httpResult.ErrorMessage = await result.Content.ReadAsStringAsync();
+                httpResult.ErrorMessage = await response.Content.ReadAsStringAsync();
             }
-
-            return httpResult;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
             httpResult.Success = false;
-            httpResult.ErrorMessage = e.Message;
-            return httpResult;
-            throw;
+            httpResult.ErrorMessage = ex.Message;
         }
+
+        return httpResult;
+    }
+
+    private static StringContent CreateJsonContent(object obj)
+    {
+        var json = JsonSerializer.Serialize(obj);
+        return new StringContent(json, Encoding.UTF8, "application/json");
     }
 
     private async Task<string> GetUserToken()
     {
-        var token = await _js.InvokeAsync<string>("localStorage.getItem", "userState");
-        if(string.IsNullOrEmpty(token))
+        var tokenJson = await _js.InvokeAsync<string>("localStorage.getItem", "userState");
+
+        if (string.IsNullOrEmpty(tokenJson))
             return string.Empty;
-        var user = JsonSerializer.Deserialize<AuthResponse>(token);
-        if (user == null)
-            return string.Empty;
-        return user!.Jwt;
+
+        var user = JsonSerializer.Deserialize<AuthResponse>(tokenJson);
+        return user?.Jwt ?? string.Empty;
     }
 
     private async Task SetJwtIntoClient()
@@ -185,5 +192,12 @@ public class HttpRequest : HttpClient, IHttpRequest
         {
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
+    }
+
+    private async Task HandleLogOut()
+    {
+        await _js.InvokeAsync<string>("localStorage.removeItem", "userState");
+        _httpClient.DefaultRequestHeaders.Authorization = null;
+        _navigationManager.NavigateTo("/login");
     }
 }
