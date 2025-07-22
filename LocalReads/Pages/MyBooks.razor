@@ -6,7 +6,7 @@
 @inject NavigationManager Navigation
 @inject AppState AppState
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="my-6">
+<MudContainer MaxWidth="MaxWidth.Large">
     <MudPaper Elevation="3" Class="pa-6">
         <MudStack Row="true" AlignItems="AlignItems.Center" JustifyContent="SpaceBetween" Class="mb-4">
             <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="GoBack" Class="mb-6">Back</MudButton>
@@ -67,14 +67,18 @@
                     </MudTd>
                     <MudTd>@context.Book.Authors</MudTd>
                     <MudTd>
-                        <MudTooltip Text="Rate this book">
-                            <MudIconButton Icon="@Icons.Material.Filled.Star" Color="Color.Warning" OnClick="@(e => RateBook(@context))" />
-                        </MudTooltip>
-                        <MudText Typo="Typo.body2">@context.Rating</MudText>
+                        <MudElement Class="d-flex justify-center align-center">
+                            <MudTooltip Text="Rate this book">
+                                <MudIconButton Icon="@Icons.Material.Filled.Star" Color="Color.Warning" OnClick="@(e => RateBook(@context))"/>
+                            </MudTooltip>
+                            <MudText Typo="Typo.body2">@context.Rating</MudText>
+                        </MudElement>
                     </MudTd>
                     <MudTd>
-                        <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning"/>
-                        <MudText Typo="Typo.body2">@context.AverageRating</MudText>
+                        <MudElement Class="d-flex justify-center align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning"/>
+                            <MudText Typo="Typo.body2">@context.AverageRating</MudText>
+                        </MudElement>
                     </MudTd>
                     @if (_listType.Equals(BookState.InProgress.ToString()))
                     {
