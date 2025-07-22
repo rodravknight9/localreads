@@ -8,10 +8,9 @@
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="my-6">
     <MudPaper Elevation="3" Class="pa-6">
-        <MudStack Direction="Row" AlignItems="AlignItems.Center" JustifyContent="SpaceBetween" Class="mb-4">
-            <MudText Typo="Typo.h5" Color="Color.Primary">
-                My Books
-            </MudText>
+        <MudStack Row="true" AlignItems="AlignItems.Center" JustifyContent="SpaceBetween" Class="mb-4">
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="GoBack" Class="mb-6">Back</MudButton>
+            <MudSpacer />
             <MudSelect Style="width: 220px;" Variant="Variant.Outlined" T="string" Value="@_listType" ValueChanged="OnCategoryChanged">
                 <MudSelectItem Value="@BookState.WantToRead.ToString()">Want To Read</MudSelectItem>
                 <MudSelectItem Value="@BookState.AlreadyRead.ToString()">Already Read</MudSelectItem>
@@ -221,5 +220,10 @@
     private void GoToBook(string googleBookId)
     {
         Navigation.NavigateTo($"/viewbook/{googleBookId}");
+    }
+    
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/");
     }
 }

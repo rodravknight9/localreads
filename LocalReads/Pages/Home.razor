@@ -5,39 +5,58 @@
 @inject IDialogService DialogService
 @inject NavigationManager Navigation
 
-<MudContainer>
-    <MudElement Class="mb-10"/>
-    <MudElement Class="d-flex flex-column" Style="width: 30%;">
-        <MudText Typo="Typo.body1" Class="mb-4">Currently Reading</MudText>
-        @foreach (var fav in _favorites)
-        {
-            <MudElement Class="d-flex mb-2">
-                <MudImage Src="@fav.Book.ImageLink" Width="90" Height="130" Class="mr-2"/>
-                <MudElement Class="d-flex flex-column">
-                    <MudLink 
-                        Href="/" 
-                        Underline="Underline.Always"
-                        Color="Color.Dark"
-                        Class="mb-1">@fav.Book.Title</MudLink>
-                    <MudText Typo="Typo.body1">by @fav.Book.Authors</MudText>
-                    <MudElement Class="mb-1">
-                        <MudProgressLinear 
-                            Color="Color.Success" 
-                            Size="Size.Medium" Value="@fav.Progress" />
-                        <MudText Typo="Typo.body2">@fav.Progress %</MudText>
-                    </MudElement>
-                    <MudButton 
-                         Variant="Variant.Outlined" 
-                         Size="Size.Small"
-                         Color="Color.Secondary"
-                         FullWidth="false"
-                         @onclick="@(e => UpdateProgress(@fav))"
-                         Style="width: 200px">Update Progress</MudButton>
-                </MudElement>
+<MudGrid Class="px-4" Style="min-height: 600px;">
+    <MudItem xs="12" md="5" lg="4">
+        <MudPaper Elevation="3" Class="pa-6">
+            <MudElement Class="d-flex flex-column">
+                <MudText Typo="Typo.body1" Class="mb-4">Currently Reading</MudText>
+                <div class="books-list pa-3">
+                    @foreach (var fav in _favorites)
+                    {
+                        <MudElement Class="d-flex mb-2">
+                            <MudImage Src="@fav.Book.ImageLink" Width="90" Height="130" Class="mr-2"/>
+                            <MudElement Class="d-flex flex-column">
+                                <MudLink
+                                    Href="/"
+                                    Underline="Underline.Always"
+                                    Color="Color.Dark"
+                                    Class="mb-1">@fav.Book.Title</MudLink>
+                                <MudText Typo="Typo.body1">by @fav.Book.Authors</MudText>
+                                <MudElement Class="mb-1">
+                                    <MudProgressLinear
+                                        Color="Color.Success"
+                                        Size="Size.Medium" Value="@fav.Progress"/>
+                                    <MudText Typo="Typo.body2">@fav.Progress %</MudText>
+                                </MudElement>
+                                <MudButton
+                                    Variant="Variant.Outlined"
+                                    Size="Size.Small"
+                                    Color="Color.Secondary"
+                                    FullWidth="false"
+                                    @onclick="@(e => UpdateProgress(@fav))"
+                                    Style="width: 200px">Update Progress</MudButton>
+                            </MudElement>
+                        </MudElement>
+                    }
+                </div>
             </MudElement>
-        }
-    </MudElement>
-</MudContainer>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" md="7" lg="8">
+        <MudPaper Style="height:100%; min-height:500px;">
+            <MudText> THis is a placeholder</MudText>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<style>
+    .books-list{
+        max-height: 520px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--mud-palette-primary) var(--mud-palette-background-grey);
+    }
+</style>
 
 @code {
     private List<Favorite> _favorites { get; set; } = [];

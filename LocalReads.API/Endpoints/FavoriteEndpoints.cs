@@ -7,7 +7,6 @@ using LocalReads.Shared.Enums;
 using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace LocalReads.API.Endpoints;
 
