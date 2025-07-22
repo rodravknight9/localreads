@@ -5,40 +5,42 @@
 <MudGrid Class="px-4" Style="min-height: 600px;">
     <!-- Left: User List (40%) -->
     <MudItem xs="12" md="5" lg="4">
-        <MudPaper Class="pa-6" Style="height:100%; overflow-y:auto; min-height:500px; background: white;">
-            <MudText Typo="Typo.h5" Class="mb-4">Server Members</MudText>
-            <MudList T="UserResponse" Dense="false">
-                @if (Users.Count == 0)
-                {
-                    <MudText Typo="Typo.body1" Color="Color.Secondary">No users found.</MudText>
-                }
-                else
-                {
-                    @foreach (var user in Users)
+        <MudPaper Class="pa-0" Style="height:100%; min-height:500px; background: var(--mud-palette-background-grey);">
+            <MudText Typo="Typo.h5" Class="mb-4 pt-6 px-6">Server Members</MudText>
+            <div class="user-list-scroll px-4 pb-4">
+                <MudList T="UserResponse" Dense="false">
+                    @if (Users.Count == 0)
                     {
-                        <MudListItem Class="mb-3 rounded-lg user-card" Style="cursor:pointer;" @onclick="() => GoToUser(user.Id)">
-                            <MudPaper Class="d-flex align-items-center pa-3"
-                                      Elevation="3"
-                                      Color="Color.Primary"
-                                      Outlined="true"
-                                      Style="width:100%; background: var(--mud-palette-primary-light); transition: box-shadow 0.2s, background 0.2s;">
-                                <MudAvatar Size="Size.Large" Color="Color.Tertiary" Class="me-3">
-                                    @user.Name?.FirstOrDefault()
-                                </MudAvatar>
-                                <MudElement Class="flex-grow-1">
-                                    <MudText Typo="Typo.subtitle1" Class="fw-bold" Style="color: var(--mud-palette-primary-dark);">@user.Name</MudText>
-                                    <MudText Typo="Typo.body2" Color="Color.Secondary">@user.UserName</MudText>
-                                    <MudText Typo="Typo.body2" Color="Color.Secondary">@user.Location</MudText>
-                                    <MudText Typo="Typo.body2" Color="Color.Info">@user.FavoriteBooksCount books</MudText>
-                                    <MudText Typo="Typo.caption" Color="Color.Primary" Class="mt-1">
-                                        Currently reading: <b>@user.CurrentlyReading</b>
-                                    </MudText>
-                                </MudElement>
-                            </MudPaper>
-                        </MudListItem>
+                        <MudText Typo="Typo.body1" Color="Color.Secondary">No users found.</MudText>
                     }
-                }
-            </MudList>
+                    else
+                    {
+                        @foreach (var user in Users)
+                        {
+                            <MudListItem Class="mb-3 rounded-lg user-card" Style="cursor:pointer;" @onclick="() => GoToUser(user.Id)">
+                                <MudPaper Class="d-flex align-items-center pa-4"
+                                          Elevation="4"
+                                          Color="Color.Surface"
+                                          Outlined="false"
+                                          Style="width:100%; transition: box-shadow 0.2s, background 0.2s;">
+                                    <MudAvatar Size="Size.Large" Color="Color.Tertiary" Class="me-3">
+                                        @user.Name?.FirstOrDefault()
+                                    </MudAvatar>
+                                    <MudElement Class="flex-grow-1">
+                                        <MudText Typo="Typo.subtitle1" Class="fw-bold" Style="color: var(--mud-palette-primary-dark);">@user.Name</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">@user.UserName</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">@user.Location</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Info">@user.FavoriteBooksCount books</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Primary" Class="mt-1">
+                                            Currently reading: <b>@user.CurrentlyReading</b>
+                                        </MudText>
+                                    </MudElement>
+                                </MudPaper>
+                            </MudListItem>
+                        }
+                    }
+                </MudList>
+            </div>
         </MudPaper>
     </MudItem>
 
@@ -56,9 +58,23 @@
 </MudGrid>
 
 <style>
+    .user-list-scroll {
+        max-height: 520px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--mud-palette-primary) var(--mud-palette-background-grey);
+    }
+    .user-list-scroll::-webkit-scrollbar {
+        width: 8px;
+        background: var(--mud-palette-background-grey);
+    }
+    .user-list-scroll::-webkit-scrollbar-thumb {
+        background: var(--mud-palette-primary-light);
+        border-radius: 4px;
+    }
     .user-card:hover > .mud-paper {
         box-shadow: 0 4px 24px 0 rgba(25, 118, 210, 0.15);
-        background: var(--mud-palette-primary);
+        background: var(--mud-palette-primary-light);
         color: var(--mud-palette-primary-contrast);
     }
     .user-card > .mud-paper {
