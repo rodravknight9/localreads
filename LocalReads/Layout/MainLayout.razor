@@ -1,40 +1,23 @@
-﻿
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
 @inject AppState AppState
 @inject IAuthService AuthService
 
 <MudLayout>
     <NavMenu />
-    <MudMainContent Class="content">
+    <MudMainContent Class="content pt-10">
         @Body
     </MudMainContent>
 </MudLayout>
 
-@* Required *@
 <MudThemeProvider />
 <MudPopoverProvider />
-
-@* Needed for dialogs *@
-<MudDialogProvider FullWidth="true"
-                   MaxWidth="MaxWidth.ExtraSmall" />
-
-@* Needed for snackbars *@
+<MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.ExtraSmall" />
 <MudSnackbarProvider />
 
 @code
 {
-    private string styles = "width: 100%; padding: 0;";
     protected override async Task OnInitializedAsync()
     {
-        if (!(await AuthService.IsLoggedIn()))
-        {
-            styles = "width: 100%; padding: 0; margin: 0";
-        }
-        else
-        {
-            styles = "width: 100%;";
-        }
-
         if (AppState.UserState.User == null)
         {
             await AuthService.PersistLoggedInUser();

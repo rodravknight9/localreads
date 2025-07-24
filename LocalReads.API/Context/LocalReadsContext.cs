@@ -16,6 +16,7 @@ namespace LocalReads.API.Context
         public DbSet<User> Users { get; set; }
         public DbSet<ProfilePicture> Pictures { get; set; }
         public DbSet<LogAction> LogActions { get; set; }
+        public DbSet<NotificationRead>  NotificationReads { get; set; }
 
         public LocalReadsContext(DbContextOptions<LocalReadsContext> options)
             : base(options)

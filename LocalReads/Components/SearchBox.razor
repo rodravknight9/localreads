@@ -20,6 +20,15 @@
     private async Task OnSearchClicked()
     {
         AppState.SearchResults.TermSearch = SearchTerm;
-        Navigation.NavigateTo("/searchbooks");
+        if (Navigation.Uri.Contains("/searchbooks"))
+        {
+            var booksData = (await HttpRequest.Get<Root>($"/googlebooks/range/{AppState.SearchResults.TermSearch}/1/10"))
+                .Content.Items;
+            AppState.SearchResults.SetSearchResults(booksData.Select(BookDto.FromBook).ToList());
+        }
+        else
+        {
+            Navigation.NavigateTo("/searchbooks");
+        }
     }
 }

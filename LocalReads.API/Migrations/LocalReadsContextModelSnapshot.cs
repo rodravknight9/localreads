@@ -155,6 +155,33 @@ namespace LocalReads.API.Migrations
                     b.ToTable("LogActions");
                 });
 
+            modelBuilder.Entity("LocalReads.Shared.Domain.NotificationRead", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("AlreadyRead")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("LogActionId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("ReadOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LogActionId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("NotificationReads");
+                });
+
             modelBuilder.Entity("LocalReads.Shared.Domain.ProfilePicture", b =>
                 {
                     b.Property<int>("Id")
@@ -248,6 +275,25 @@ namespace LocalReads.API.Migrations
                         .IsRequired();
 
                     b.Navigation("Book");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LocalReads.Shared.Domain.NotificationRead", b =>
+                {
+                    b.HasOne("LocalReads.Shared.Domain.LogAction", "LogAction")
+                        .WithMany()
+                        .HasForeignKey("LogActionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LocalReads.Shared.Domain.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LogAction");
 
                     b.Navigation("User");
                 });
