@@ -59,6 +59,7 @@ app.UseCors(x =>
 app.MapUserEndpoints();
 app.MapFavoriteEndpoints();
 app.MapGoogleBooksEndpoints();
+app.MapNotificationsEndpoints();
 
 
 // Configure the HTTP request pipeline.

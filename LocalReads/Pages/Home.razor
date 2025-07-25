@@ -1,4 +1,5 @@
 @page "/"
+@using LocalReads.Shared.DataTransfer.Notifications
 @inject IHttpRequest HttpRequest
 @inject AppState AppState
 @inject IAuthService AuthService
@@ -6,7 +7,7 @@
 @inject NavigationManager Navigation
 
 <MudGrid Class="px-4" Style="min-height: 600px;">
-    <MudItem xs="12" md="5" lg="4">
+    <MudItem xs="12" md="5" lg="3">
         <MudPaper Elevation="3" Class="pa-6">
             <MudElement Class="d-flex flex-column">
                 <MudText Typo="Typo.body1" Class="mb-4">Currently Reading</MudText>
@@ -42,9 +43,20 @@
             </MudElement>
         </MudPaper>
     </MudItem>
-    <MudItem xs="12" md="7" lg="8">
-        <MudPaper Style="height:100%; min-height:500px;">
-            <MudText> THis is a placeholder</MudText>
+    <MudItem xs="12" md="7" lg="6">
+        <MudPaper Style="height:100%; min-height:500px;" Elevation="3" Class="pa-6">
+            <MudElement Class="d-flex flex-column">
+                <MudText Typo="Typo.body1" Class="mb-4">This Week</MudText>
+                <div class="books-list pa-3">
+                    @foreach (var not in _notifications)
+                    {
+                        <MudElement Class="d-flex pa-3 flex-column notification-list" Style="border-bottom: 2px solid #eee">
+                            <MudText Typo="Typo.body1">@not.Message</MudText>
+                            <MudText Typo="Typo.body2">@not.Date</MudText>
+                        </MudElement>
+                    }
+                </div>
+            </MudElement>
         </MudPaper>
     </MudItem>
 </MudGrid>
@@ -56,10 +68,16 @@
         scrollbar-width: thin;
         scrollbar-color: var(--mud-palette-primary) var(--mud-palette-background-grey);
     }
+    
+    .notification-list:hover {
+        background-color: #eeeeee;
+        cursor: pointer;
+    }
 </style>
 
 @code {
     private List<Favorite> _favorites { get; set; } = [];
+    private List<Notification> _notifications { get; set; } = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -69,6 +87,7 @@
         }
 
         _favorites = (await HttpRequest.Get<List<Favorite>>($"/favorite/inprogress")).Content;
+        _notifications = (await HttpRequest.Get<List<Notification>>("/notifications/week")).Content;
     }
 
     private async Task UpdateProgress(Favorite favorite)

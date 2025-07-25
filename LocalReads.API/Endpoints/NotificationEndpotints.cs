@@ -1,4 +1,5 @@
 ﻿using LocalReads.API.Context;
+using LocalReads.Shared.DataTransfer.Notifications;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,10 +24,20 @@ public static class NotificationEndpotints
         {
             var notifications = db.LogActions.AsNoTracking()
                 .Where(n => n.ActionTime >= DateTime.UtcNow.AddDays(-7))
-                .ToList();
+                .ToList()
+                .OrderByDescending(n => n.ActionTime);
 
-            return Results.Ok(notifications);
-        });
+            var response = notifications.Select(not => new Notification
+            {
+                Message = not.Action,
+                Date = not.ActionTime,
+                UserId = not.UserId,
+                Id = not.Id,
+                IsRead = false
+            });
+
+            return Results.Ok(response);
+        }).RequireAuthorization();
 
         app.MapPost("/notification/read", async (LocalReadsContext db) =>
         {

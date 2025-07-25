@@ -53,7 +53,7 @@ public static class UserEndpoints
 
             var notification = new Notification
             {
-                CreatedAt = DateTime.Now,
+                Date = DateTime.Now,
                 IsRead = false,
                 Message = logAction.Action
             };

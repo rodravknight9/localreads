@@ -6,6 +6,7 @@
     <!-- Left: User List (40%) -->
     <MudItem xs="12" md="5" lg="4" Style="color: white">
         <MudPaper Class="pa-0" Style="height:100%; min-height:500px; background: white;">
+            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.ArrowBack" Class="ml-6 mt-4">Back</MudButton>
             <MudText Typo="Typo.body1" Class="mb-4 pt-6 px-6">Server Members</MudText>
             <div class="user-list-scroll px-4 pb-4">
                 <MudList T="UserResponse" Dense="false">
@@ -17,7 +18,7 @@
                     {
                         @foreach (var user in Users)
                         {
-                            <MudListItem  Style="cursor:pointer; border-bottom: 2px solid #eee" @onclick="() => GoToUser(user.Id)">
+                            <MudListItem Style="cursor:pointer; border-bottom: 2px solid #eee" @onclick="() => GoToUser(user.Id)">
                                 <MudElement Class="d-flex flex-row ma-0 pa-0">
                                     <MudAvatar Size="Size.Medium" Color="Color.Tertiary" Style="background-color: #70b9ff; padding: 15px; margin-right: 2rem">
                                         @user.Name?.FirstOrDefault()</MudAvatar>
@@ -31,7 +32,7 @@
                                         </MudText>
                                     </MudElement>
                                 </MudElement>
-                               
+
                             </MudListItem>
                         }
                     }
