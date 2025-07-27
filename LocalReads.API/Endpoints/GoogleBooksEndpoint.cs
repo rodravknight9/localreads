@@ -47,9 +47,22 @@ public static class GoogleBooksEndpoint
             }
 
             var googleBook = await googleService.GetBookByCode(bookCode);
-            serverBook.Book = mapper.Map<Book>(googleBook);
+            serverBook.Book = new Book
+            {
+                BookGoogleId = googleBook.Id,
+                Title = googleBook.VolumeInfo.Title,
+                Authors = googleBook.VolumeInfo.Authors?.Aggregate((a, b) => $"{a}, {b}") ?? "" ,
+                Description = googleBook.VolumeInfo.Description,
+                Publisher = googleBook.VolumeInfo.Publisher,
+                PublishedDate = googleBook.VolumeInfo.PublishedDate,
+                PageCount = googleBook.VolumeInfo.PageCount,
+                Categories = googleBook.VolumeInfo.Categories?.Aggregate((a, b) => $"{a}, {b}") ?? "",
+                ImageLink = googleBook.VolumeInfo.ImageLinks?.ExtraLarge,
+                Language = googleBook.VolumeInfo.Language,
+                LargestImageLink = googleBook.VolumeInfo.ImageLinks?.ExtraLarge
+            };
 
-            return Results.Ok(googleBook);
+            return Results.Ok(serverBook);
         });
 
     }

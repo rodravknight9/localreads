@@ -1,14 +1,18 @@
 ﻿@page "/searchbooks"
 @using System.Text.RegularExpressions
+@using LocalReads.Shared.DataTransfer.Favorites
 @using LocalReads.Shared.DataTransfer.GoogleBooks
+@using LocalReads.Shared.Errors
 @inject IDialogService DialogService
 @inject IAuthService AuthService
 @inject IHttpRequest HttpRequest
+@inject ISnackbar Snackbar
 @inject AppState AppState
+@inject NavigationManager Navigation
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <MudPaper Elevation="3" Class="pa-6">
-        <MudStack Direction="Row" AlignItems="AlignItems.Center" JustifyContent="SpaceBetween" Class="mb-4">
+        <MudStack AlignItems="AlignItems.Center" Class="mb-4">
             <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
                 @if (!string.IsNullOrWhiteSpace(AppState.SearchResults.TermSearch))
                 {
@@ -54,7 +58,12 @@
                         <MudImage Src="@(!string.IsNullOrWhiteSpace(context.ImageLink) ? context.ImageLink : "images/placeholder-book.png")"
                                   Width="40" Alt="Book cover" />
                     </MudTd>
-                    <MudTd>@context.Title</MudTd>
+                    <MudTd>
+                        <MudText>
+                            <MudLink Href="@($"/viewbook/{@context.BookGoogleId}")" Color="Color.Primary" Class="ms-1">@context.Title</MudLink>
+                        </MudText>
+                            
+                    </MudTd>
                     <MudTd>@context.Authors</MudTd>
                     <MudTd>@context.Publisher</MudTd>
                     <MudTd>@context.PageCount</MudTd>
@@ -88,6 +97,7 @@
     private MudTable<BookDto> _table;
     private int _guardOldPageIndex = -1;
     private string _guardOldSearch = string.Empty;
+    private bool _notShowPromptTwiceOnOverride = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -119,7 +129,7 @@
         var result = await dialog.Result;
         if (result != null && result.Canceled)
         {
-            return;    
+            return;
         }
 
         var dialogData = (CreateFavorite)result!.Data!;
@@ -133,7 +143,36 @@
         favoriteBook.ReadTime = dialogData.ReadTime;
         favoriteBook.Progress = dialogData.Progress;
 
-        await HttpRequest.SimplePost(favoriteBook, "/favorite");
+        var response = await HttpRequest.SendPost<CreateFavorite, AddFavortiteResponse>(favoriteBook, "favorite");
+
+        if (!response.IsSuccess && response.HasServerFeedback)
+        {
+            if (response.Code.Equals(LocalReadsErrors.AlreadyFavorited))
+            {
+                var paramsDialogOvverride = new DialogParameters
+                {
+                    { "Title", "Already in a list"},
+                    { "Message", response.ServerMessage },
+                    { "AfirmativeText", "Yes"},
+                    { "NegativeText", "No"},
+                    { "HasCancelEvent", true }
+                };
+
+                var dialogOverride = await DialogService.ShowAsync<GenericDialog>(null, paramsDialogOvverride, options);
+                var resultOverride = await dialogOverride.Result;
+                if (resultOverride != null && !resultOverride.Canceled)
+                {
+                    favoriteBook.OverrideState = true;
+                    await HttpRequest.SimplePost(favoriteBook, "/favorite");
+                    Snackbar.Add($"Book '{book.Title}' added to {listType} list.", Severity.Success);
+                }
+            }
+
+        }
+        else if (response.IsSuccess)
+        {
+            Snackbar.Add($"Book '{book.Title}' added to {listType} list.", Severity.Success);
+        }
 
     }
 
@@ -191,4 +230,8 @@
         });
     }
 
+    private void GoToBook(string googleBookId)
+    {
+        Navigation.NavigateTo($"/viewbook/{googleBookId}");
+    }
 }

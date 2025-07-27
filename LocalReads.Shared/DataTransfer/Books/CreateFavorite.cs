@@ -9,5 +9,6 @@ public class CreateFavorite
     public int State { get; set; }
     public int Progress { get; set; }
     public DateTime ReadTime { get; set; }
+    public bool OverrideState { get; set; } 
     public Book Book { get; set; }
 }

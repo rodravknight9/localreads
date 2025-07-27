@@ -44,7 +44,7 @@ public class GoogleService : IGoogleService
     public async Task<GoogleBook> GetBookByCode(string bookCode)
     {
         using var client = new HttpClient();
-        var rawResponse = await client.GetStringAsync("https://www.googleapis.com/books/v1/volumes/s1gVAAAAYAAJ");
+        var rawResponse = await client.GetStringAsync($"https://www.googleapis.com/books/v1/volumes/{bookCode}");
         var book = JsonSerializer.Deserialize<GoogleBook>(rawResponse);
         return book!;
     }

@@ -1,11 +1,11 @@
 ﻿using LocalReads.Models;
 using LocalReads.Shared.DataTransfer;
 using LocalReads.Shared.DataTransfer.User;
+using LocalReads.Shared.Errors;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 
@@ -163,6 +163,42 @@ public class HttpRequest : IHttpRequest
         {
             httpResult.Success = false;
             httpResult.ErrorMessage = ex.Message;
+            _snackbar.Add(httpResult.ErrorMessage, Severity.Error);
+        }
+
+        return httpResult;
+    }
+
+
+    public async Task<HttpLocalReadsResponse<TResponse>> SendPost<TRequest, TResponse>(TRequest entity, string path)
+    {
+        return await SendLocalReadsRequest<TResponse>(HttpMethod.Post, path, entity!);
+    }
+
+    private async Task<HttpLocalReadsResponse<TResponse>> SendLocalReadsRequest<TResponse>(HttpMethod method, string path, object body)
+    {
+        var httpResult = new HttpLocalReadsResponse<TResponse>();
+
+        try
+        {
+            await SetJwtIntoClient();
+            var request = new HttpRequestMessage(method, path)
+            {
+                Content = CreateJsonContent(body)
+            };
+
+            var response = await _httpClient.SendAsync(request);
+            var stringContent = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            httpResult = JsonSerializer.Deserialize<HttpLocalReadsResponse<TResponse>>(stringContent, options)!;
+            
+        }
+        catch (Exception ex)
+        {
+            httpResult.IsSuccess = false;
+            httpResult.Code = LocalReadsErrors.UnknownError;
+            httpResult.ServerMessage = $"Unkown Exception: {ex.Message}";
+            _snackbar.Add(httpResult.ServerMessage, Severity.Error);
         }
 
         return httpResult;

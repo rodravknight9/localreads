@@ -1,9 +1,11 @@
 ﻿using LocalReads.API.Context;
 using LocalReads.Shared.Constants;
+using LocalReads.Shared.DataTransfer;
 using LocalReads.Shared.DataTransfer.Books;
 using LocalReads.Shared.DataTransfer.Favorites;
 using LocalReads.Shared.Domain;
 using LocalReads.Shared.Enums;
+using LocalReads.Shared.Errors;
 using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +19,12 @@ public static class FavoriteEndpoints
         app.MapPost("/favorite", async (CreateFavorite favorite, LocalReadsContext db, HttpContext context) =>
         {
             string bookList = string.Empty;
+            var addFavResponse = new AddFavortiteResponse();
+            var httpLocalReadsResponse = new HttpLocalReadsResponse<AddFavortiteResponse>
+            {
+                Data = addFavResponse
+            };
+
             var bookExists = db.Books
                 .FirstOrDefault(b => b.BookGoogleId == favorite.Book.BookGoogleId);
 
@@ -58,9 +66,51 @@ public static class FavoriteEndpoints
                     break;
             }
 
-            await db.AddAsync(newFavorite);
+            if (favorite.OverrideState)
+            { 
+                var oldFavorite = db.Favorites
+                    .First(fav => fav.UserId == favorite.UserId 
+                        && fav.Book.BookGoogleId == bookExists.BookGoogleId);
 
-            db.SaveChanges();
+                oldFavorite.State = favorite.State;
+                oldFavorite.Progress = favorite.Progress;
+                oldFavorite.ReadTime = favorite.ReadTime;
+
+                db.Favorites.Update(oldFavorite);
+                db.SaveChanges();
+
+                httpLocalReadsResponse.HasServerFeedback = false;
+                httpLocalReadsResponse.IsSuccess = true;
+                httpLocalReadsResponse.Data.FavortiteId = oldFavorite.Id;
+
+                return Results.Ok(httpLocalReadsResponse);
+            }
+
+            bool isFavorite = db.Favorites
+                    .Any(fav => fav.UserId == favorite.UserId 
+                        && fav.Book.BookGoogleId == bookExists.BookGoogleId);
+
+            if (isFavorite)
+            {
+                var overrideBook = db.Favorites
+                    .Where(fav => fav.UserId == favorite.UserId 
+                        && fav.Book.BookGoogleId == bookExists.BookGoogleId)
+                    .AsNoTracking()
+                    .Select(fav => (BookState)fav.State)
+                    .FirstOrDefault();
+
+                httpLocalReadsResponse.HasServerFeedback = true;
+                httpLocalReadsResponse.IsSuccess = false;
+                httpLocalReadsResponse.Code = LocalReadsErrors.AlreadyFavorited;
+                httpLocalReadsResponse.ServerMessage = $"You already have this book in your '{bookList}' list." +
+                    $"Do you want to move it to the '{nameof(newFavorite.State)}'?";
+
+                return Results.BadRequest(httpLocalReadsResponse);
+            }
+
+            // create a new favorite entry
+            await db.AddAsync(newFavorite);
+            await db.SaveChangesAsync();
 
             var logAction = new LogAction
             {
@@ -75,7 +125,12 @@ public static class FavoriteEndpoints
             db.LogActions.Add(logAction);
             db.SaveChanges();
 
-            return Results.Created();
+            httpLocalReadsResponse.HasServerFeedback = false;
+            httpLocalReadsResponse.IsSuccess = true;
+            httpLocalReadsResponse.Data.FavortiteId = newFavorite.Id;
+
+            return Results.Ok(httpLocalReadsResponse);
+
         }).RequireAuthorization();
 
         app.MapGet("/favorites", ([FromQuery] string type, LocalReadsContext db, HttpContext context, IMapper mapper) =>
