@@ -44,17 +44,35 @@
     <!-- Right: Placeholder for future content (60%) -->
     <MudItem xs="12" md="7" lg="8">
         <MudPaper Class="pa-6 d-flex flex-column align-items-center justify-center" Style="height:100%; min-height:500px;">
-            <MudText Typo="Typo.h6" Color="Color.Tertiary" Class="mb-2">
-                Future content area
-            </MudText>
-            <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">
-                This space is reserved for server statistics, most read books, or other features.
-            </MudText>
+                <MudElement Class="d-flex flex-column" Style="height: 100%">
+                    <MudText Typo="Typo.body1" Class="mb-4">Most Read Book</MudText>
+                    <div class="server-books pa-3 d-flex justify-start align-center">
+                        @foreach (var fav in PopularBooks.MostReadBooks)
+                        {
+                            <MudElement Class="d-flex flex-column mb-2 pa-4" Style="max-width: 300px;">
+                                <MudImage Src="@fav.Book.ImageLink" Width="90" Height="130" Class="mr-2" />
+                                <MudElement Class="d-flex flex-column">
+                                    <MudButton
+                                        Variant="Variant.Outlined"
+                                        Size="Size.Small"
+                                        Color="Color.Secondary"
+                                        FullWidth="false"
+                                        @onclick="@(e => Navigation.NavigateTo($"/viewbook/{@fav.Book.BookGoogleId}"))"
+                                        Style="width: 100px; margin-top: 10px">Go to book</MudButton>
+                                </MudElement>
+                            </MudElement>
+                        }
+                    </div>
+                </MudElement>
         </MudPaper>
     </MudItem>
 </MudGrid>
 
 <style>
+    .server-books {
+        scrollbar-width: thin;
+        overflow: auto;
+    }
     .user-list-scroll {
         max-height: 520px;
         overflow-y: auto;
@@ -73,10 +91,12 @@
 
 @code {
     private List<UserResponse> Users = new List<UserResponse>();
+    private PopularBooks PopularBooks = new PopularBooks();
 
     protected override async Task OnInitializedAsync()
     {
         Users = (await HttpRequest.Get<List<UserResponse>>($"/users")).Content;
+        PopularBooks = (await HttpRequest.Get<PopularBooks>($"/favorites/server")).Content;
     }
 
     private void GoToUser(int id)

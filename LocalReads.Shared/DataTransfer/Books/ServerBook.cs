@@ -8,4 +8,5 @@ public class ServerBook
     public double AverageRating { get; set; }
     public int RatingsCount { get; set; }
     public Book Book { get; set; } = new Book();
+    public int FavoriteCount { get; set; }
 }

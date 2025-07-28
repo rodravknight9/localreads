@@ -208,5 +208,43 @@ public static class FavoriteEndpoints
                 .Include(fav => fav.Book)
                 .Where(fav => fav.UserId == userId && fav.State == (int)BookState.InProgress);
         }).RequireAuthorization();
+
+        app.MapGet("/favorites/server", async (LocalReadsContext db) =>
+        {
+            var popularBooks = new PopularBooks();
+            var topBooks = db.Favorites
+                .Include(f => f.Book)
+                .GroupBy(f => f.BookId)
+                .AsNoTracking()
+                .Select(g => new
+                {
+                    BookId = g.Key,
+                    ValueCount = g.Count()
+                })
+                .OrderByDescending(x => x.ValueCount)
+                .Take(5);
+
+            // https://github.com/dotnet/efcore/issues/28125
+            // seems like this wont work until Efcore solve this, because of that prefer to create different queries
+
+            var booksDict = (await topBooks.ToListAsync()).ToDictionary(x => x.BookId, x => x.ValueCount);
+            var booksReadIds = booksDict.Keys.ToList();
+            popularBooks.MostReadBooks = db.Books
+                .AsNoTracking()
+                .Where(b => booksReadIds.Contains(b.Id))
+                .Select(b => new ServerBook
+                {
+                    Book = b,
+                    AverageRating = db.Favorites
+                        .Where(f => f.BookId == b.Id && f.Rating > 0)
+                        .Select(f => (double?)f.Rating)
+                        .Average() ?? 0,
+                    IsFavorite = true,
+                    RatingsCount = db.Favorites.Count(f => f.BookId == b.Id && f.Rating > 0),
+                    FavoriteCount = booksDict[b.Id]
+                }).ToList();
+
+            return Results.Ok(popularBooks);
+        }).Produces<PopularBooks>();
     }
 }

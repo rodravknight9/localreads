@@ -36,11 +36,11 @@ public static class GoogleBooksEndpoint
             {
                 serverBook.Book = book;
                 serverBook.IsFavorite = true;
-                serverBook.RatingsCount = db.Favorites.Count(fav => fav.Rating > 0);
+                serverBook.RatingsCount = db.Favorites.Count(fav => fav.Rating > 0 && fav.Book.BookGoogleId == serverBook.Book.BookGoogleId);
                 if (serverBook.RatingsCount > 0)
                 { 
                     serverBook.AverageRating = db.Favorites
-                        .Where(fav => fav.Rating > 0)
+                        .Where(fav => fav.Rating > 0 && fav.Book.BookGoogleId == serverBook.Book.BookGoogleId)
                         .Average(fav => fav.Rating);
                 }
                 return Results.Ok(serverBook);
@@ -63,7 +63,7 @@ public static class GoogleBooksEndpoint
             };
 
             return Results.Ok(serverBook);
-        });
+        }).Produces<ServerBook>();
 
     }
 }
