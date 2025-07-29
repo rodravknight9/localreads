@@ -24,7 +24,7 @@ public static class GoogleBooksEndpoint
             return await googleService.GetBooksRange(search, index, limit);
         });
 
-        app.MapGet("/googlebooks/book/{bookCode}", async (string bookCode, IGoogleService googleService, LocalReadsContext db, IMapper mapper) => {
+        app.MapGet("/googlebooks/book/{bookCode}", async (string bookCode, IGoogleService googleService, LocalReadsContext db, HttpContext context) => {
 
             var serverBook = new ServerBook();
 
@@ -43,6 +43,8 @@ public static class GoogleBooksEndpoint
                         .Where(fav => fav.Rating > 0 && fav.Book.BookGoogleId == serverBook.Book.BookGoogleId)
                         .Average(fav => fav.Rating);
                 }
+                var userId = (int)context.Items["UserId"]!;
+                serverBook.Favorite = await db.Favorites.FirstOrDefaultAsync(fav => fav.UserId == userId && fav.BookId == serverBook.Book.Id);
                 return Results.Ok(serverBook);
             }
 
@@ -63,7 +65,8 @@ public static class GoogleBooksEndpoint
             };
 
             return Results.Ok(serverBook);
-        }).Produces<ServerBook>();
+        }).RequireAuthorization()
+        .Produces<ServerBook>();
 
     }
 }

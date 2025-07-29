@@ -245,6 +245,17 @@ public static class FavoriteEndpoints
                 }).ToList();
 
             return Results.Ok(popularBooks);
-        }).Produces<PopularBooks>();
+        
+        }).Produces<PopularBooks>().RequireAuthorization();
+
+        app.MapPatch("/favorites/updatestate", async (UpdateFavoriteState favState, LocalReadsContext db) =>
+        {
+            var favorite = await db.Favorites.FirstAsync(fav => fav.Id == favState.FavoriteId);
+            favorite.State = (int)favState.BookState;
+            db.Favorites.Update(favorite);
+            await db.SaveChangesAsync();
+            return Results.NoContent();
+
+        }).RequireAuthorization();
     }
 }

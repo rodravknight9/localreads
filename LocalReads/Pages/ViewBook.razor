@@ -1,7 +1,9 @@
 @page "/viewbook/{googleBookId}"
+@using LocalReads.Shared.DataTransfer.Favorites
 @inject IHttpRequest HttpRequest
 @inject AppState State
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mx-auto">
     @if (isLoading)
@@ -20,10 +22,20 @@
                               Alt="@ServerBook.Book.Title"
                               Elevation="25"
                               Class="rounded-lg mb-4" />
-                    @if (ServerBook.IsFavorite)
+                    @if (ServerBook.IsFavorite && ServerBook.Favorite != null)
                     {
                         <MudChip Color="Color.Success" Icon="@Icons.Material.Filled.Star"  T="string" Class="mb-3">Favorite</MudChip>
+                        <MudSelect Style="width: 220px;" Variant="Variant.Outlined" T="BookState" Value="@_listType" ValueChanged="OnCategoryChanged">
+                            <MudSelectItem Value="@BookState.WantToRead">Want To Read</MudSelectItem>
+                            <MudSelectItem Value="@BookState.AlreadyRead">Already Read</MudSelectItem>
+                            <MudSelectItem Value="@BookState.InProgress">In Progress</MudSelectItem>
+                            <MudSelectItem Value="@BookState.Abandoned">Abandoned</MudSelectItem>
+                        </MudSelect>
                         <MudLink Class="mb-3" Href="#">Edit My Activity</MudLink>
+                        @if (_changedList)
+                        {
+                            <MudButton Color="Color.Primary" OnClick="UpdateBookState">Save</MudButton>
+                        }
                     }
                 </MudItem>
                 <MudItem xs="12" sm="8">
@@ -82,6 +94,9 @@
     private ServerBook ServerBook { get; set; }
     private bool isLoading = true;
 
+    private bool _changedList = false;
+    private BookState _listType = BookState.WantToRead;
+
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
@@ -98,5 +113,26 @@
     private void GoBack()
     {
         Navigation.NavigateTo("/");
+    }
+
+    private void OnCategoryChanged(BookState listType)
+    {
+        _listType = listType;
+        _changedList = (int)listType != ServerBook.Favorite.State;
+    }
+
+    private async Task UpdateBookState()
+    {
+        if (_changedList)
+        {
+            var updatedState = new UpdateFavoriteState
+            {
+                FavoriteId = ServerBook.Favorite?.Id ?? 0,
+                BookState = _listType
+            };
+            await HttpRequest.SimplePatch<UpdateFavoriteState>(updatedState, $"/favorites/updatestate");
+            _changedList = false;
+            Snackbar.Add("Book state updated successfully!", Severity.Success);
+        }
     }
 }
