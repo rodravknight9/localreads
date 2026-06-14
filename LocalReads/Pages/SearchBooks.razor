@@ -10,24 +10,36 @@
 @inject AppState AppState
 @inject NavigationManager Navigation
 
-<MudContainer MaxWidth="MaxWidth.Large">
-    <MudPaper Elevation="3" Class="pa-6">
-        <MudStack AlignItems="AlignItems.Center" Class="mb-4">
-            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
-                @if (!string.IsNullOrWhiteSpace(AppState.SearchResults.TermSearch))
-                {
-                    <span>for "<b>@AppState.SearchResults.TermSearch</b>"</span>
-                }
-            </MudText>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-6">
+    <MudPaper Elevation="4" Class="pa-6" Style="border-radius: 8px;">
+        @* Header Section *@
+        <MudStack Spacing="3" Class="mb-6">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.Search" Size="Size.Large" Color="Color.Primary" />
+                <MudText Typo="Typo.h5" Class="ma-0">Search Results</MudText>
+            </MudStack>
+            @if (!string.IsNullOrWhiteSpace(AppState.SearchResults.TermSearch))
+            {
+                <MudChip T="string" Icon="@Icons.Material.Filled.Book" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Medium">
+                    Results for "<strong>@AppState.SearchResults.TermSearch</strong>"
+                </MudChip>
+            }
         </MudStack>
-        <MudDivider Class="mb-4" />
+        
+        <MudDivider Class="mb-6" />
 
-        @* @if (AppState.SearchResults.Books == null || !AppState.SearchResults.Books.Any()) *@
+        @* Content Section *@
         @if (string.IsNullOrEmpty(AppState.SearchResults.TermSearch))
         {
-            <MudText Typo="Typo.h6" Color="Color.Secondary" Align="Align.Center" Class="my-8">
-                No books found. Try a different search term.
-            </MudText>
+            <MudStack AlignItems="AlignItems.Center" Spacing="4" Class="my-12">
+                <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Color="Color.Secondary" Style="opacity: 0.5;" />
+                <MudText Typo="Typo.h6" Color="Color.Secondary" Align="Align.Center">
+                    Start searching for books
+                </MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Style="max-width: 400px;">
+                    Enter a search term in the search bar to find books from the Google Books library.
+                </MudText>
+            </MudStack>
         }
         else
         {
@@ -39,48 +51,99 @@
                       Breakpoint="Breakpoint.Sm"
                       LoadingProgressColor="Color.Info"
                       HorizontalScrollbar="true"
-                      Height="550px"
+                      Height="600px"
                       FixedHeader="true"
-                      Elevation="1"
+                      Elevation="2"
+                      Class="search-results-table"
                       ServerData="TableReload">
                 <HeaderContent>
-                    <MudTh>Cover</MudTh>
+                    <MudTh Style="width: 100px;">Cover</MudTh>
                     <MudTh>Title</MudTh>
                     <MudTh>Authors</MudTh>
                     <MudTh>Publisher</MudTh>
-                    <MudTh>Page Count</MudTh>
-                    <MudTh>Published Date</MudTh>
+                    <MudTh Style="width: 100px;">Pages</MudTh>
+                    <MudTh Style="width: 120px;">Published</MudTh>
                     <MudTh>Categories</MudTh>
-                    <MudTh>Actions</MudTh>
+                    <MudTh Style="width: 200px;">Actions</MudTh>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd>
                         <MudImage Src="@(!string.IsNullOrWhiteSpace(context.ImageLink) ? context.ImageLink : "images/placeholder-book.png")"
-                                  Width="40" Alt="Book cover" />
+                                  Width="60" 
+                                  Height="90"
+                                  Alt="Book cover"
+                                  Style="border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); object-fit: cover;" />
                     </MudTd>
                     <MudTd>
-                        <MudText>
-                            <MudLink Href="@($"/viewbook/{@context.BookGoogleId}")" Color="Color.Primary" Class="ms-1">@context.Title</MudLink>
+                        <MudText Typo="Typo.body1" Class="mb-0">
+                            <MudLink Href="@($"/viewbook/{@context.BookGoogleId}")" 
+                                     Color="Color.Primary" 
+                                     Underline="Underline.Hover"
+                                     Class="text-decoration-none">
+                                @context.Title
+                            </MudLink>
                         </MudText>
-                            
                     </MudTd>
-                    <MudTd>@context.Authors</MudTd>
-                    <MudTd>@context.Publisher</MudTd>
-                    <MudTd>@context.PageCount</MudTd>
-                    <MudTd>@context.PublishedDate</MudTd>
-                    <MudTd>@context.Categories</MudTd>
-                    <MudTd Class="d-flex align-center">
+                    <MudTd>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            @(!string.IsNullOrWhiteSpace(context.Authors) ? context.Authors : "Unknown")
+                        </MudText>
+                    </MudTd>
+                    <MudTd>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            @(!string.IsNullOrWhiteSpace(context.Publisher) ? context.Publisher : "-")
+                        </MudText>
+                    </MudTd>
+                    <MudTd>
+                        <MudText Typo="Typo.body2">
+                            @(context.PageCount > 0 ? context.PageCount.ToString() : "-")
+                        </MudText>
+                    </MudTd>
+                    <MudTd>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            @(!string.IsNullOrWhiteSpace(context.PublishedDate) ? context.PublishedDate : "-")
+                        </MudText>
+                    </MudTd>
+                    <MudTd>
+                        @if (!string.IsNullOrWhiteSpace(context.Categories))
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Text">
+                                @context.Categories
+                            </MudChip>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
+                        }
+                    </MudTd>
+                    <MudTd Class="d-flex align-center" Style="gap: 4px;">
                         <MudTooltip Text="Add to Want to Read">
-                            <MudIconButton Icon="@Icons.Material.Filled.BookmarkAdd" Color="Color.Info" OnClick="@(e => AddToFavorites(context, BookState.WantToRead))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.BookmarkAdd" 
+                                         Color="Color.Info" 
+                                         Size="Size.Small"
+                                         Variant="Variant.Text"
+                                         OnClick="@(() => AddToFavorites(context, BookState.WantToRead))" />
                         </MudTooltip>
                         <MudTooltip Text="Mark as In Progress">
-                            <MudIconButton Icon="@Icons.Material.Filled.AutoStories" Color="Color.Primary" OnClick="@(e => AddToFavorites(context, BookState.InProgress))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.AutoStories" 
+                                         Color="Color.Primary" 
+                                         Size="Size.Small"
+                                         Variant="Variant.Text"
+                                         OnClick="@(() => AddToFavorites(context, BookState.InProgress))" />
                         </MudTooltip>
                         <MudTooltip Text="Add as Read">
-                            <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" OnClick="@(e => AddToFavorites(context, BookState.AlreadyRead))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" 
+                                         Color="Color.Success" 
+                                         Size="Size.Small"
+                                         Variant="Variant.Text"
+                                         OnClick="@(() => AddToFavorites(context, BookState.AlreadyRead))" />
                         </MudTooltip>
                         <MudTooltip Text="Add as Abandoned">
-                            <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" OnClick="@(e => AddToFavorites(context, BookState.Abandoned))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Cancel" 
+                                         Color="Color.Error" 
+                                         Size="Size.Small"
+                                         Variant="Variant.Text"
+                                         OnClick="@(() => AddToFavorites(context, BookState.Abandoned))" />
                         </MudTooltip>
                     </MudTd>
                 </RowTemplate>
@@ -92,9 +155,25 @@
     </MudPaper>
 </MudContainer>
 
+<style>
+    .search-results-table .mud-table-row:hover {
+        background-color: rgba(var(--mud-palette-primary-rgb), 0.04);
+        transition: background-color 0.2s ease;
+    }
+    
+    .search-results-table .mud-table-cell {
+        padding: 12px 16px;
+    }
+    
+    .search-results-table .mud-table-head .mud-table-cell {
+        font-weight: 600;
+        color: var(--mud-palette-text-primary);
+    }
+</style>
+
 @code
 {
-    private MudTable<BookDto> _table;
+    private MudTable<BookDto>? _table;
     private int _guardOldPageIndex = -1;
     private string _guardOldSearch = string.Empty;
     private bool _notShowPromptTwiceOnOverride = false;
@@ -207,7 +286,7 @@
                 Items = items
             };
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return new TableData<BookDto>()
             {
